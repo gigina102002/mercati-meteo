@@ -476,7 +476,8 @@ function applicaCielo(m) {
     }
   }
   p = Math.min(1, Math.max(0, p));
-  el.style.setProperty("--astro-x", (50 - 44 * Math.cos(Math.PI * p)).toFixed(2) + "%");
+  // l'arco occupa la metà destra del cielo, così il sole non copre le scritte
+  el.style.setProperty("--astro-x", (77 - 19 * Math.cos(Math.PI * p)).toFixed(2) + "%");
   el.style.setProperty("--astro-y", (80 - 58 * Math.sin(Math.PI * p)).toFixed(2) + "%");
 }
 
@@ -779,10 +780,16 @@ function mostraMappaEsterna(lat, lon, zoom) {
     document.querySelectorAll(".chip-fonte").forEach(b => b.classList.toggle("attivo", b.dataset.fonte === fonte));
     $("apri-esterno").href = `https://www.flightradar24.com/${(+lat).toFixed(2)},${(+lon).toFixed(2)}/${zoom}`;
   } else {
-    // MarineTraffic offre uno script da inserire nella pagina: lo carichiamo dentro l'iframe
-    iframe.srcdoc = `<!DOCTYPE html><html><head><style>html,body{margin:0;height:100%}</style></head><body>
-      <script>width="100%";height="100%";border="0";shownames="true";latitude="${lat}";longitude="${lon}";zoom="${zoom}";maptype="1";trackvessel="0";fleet="";<\/script>
-      <script src="https://www.marinetraffic.com/js/embed.js"><\/script></body></html>`;
+    // VesselFinder e MarineTraffic offrono uno script da inserire nella pagina: lo carichiamo dentro l'iframe
+    const fonte = memoria.leggi("fonte-navi") || "vesselfinder";
+    const altezza = Math.max(300, iframe.clientHeight || 600);
+    const script = fonte === "marinetraffic"
+      ? `<script>width="100%";height="${altezza}";border="0";shownames="true";latitude="${lat}";longitude="${lon}";zoom="${zoom}";maptype="1";trackvessel="0";fleet="";<\/script>
+         <script src="https://www.marinetraffic.com/js/embed.js"><\/script>`
+      : `<script>var width="100%";var height="${altezza}";var latitude="${lat}";var longitude="${lon}";var zoom="${zoom}";var names=true;var show_names=true;<\/script>
+         <script src="https://www.vesselfinder.com/aismap.js"><\/script>`;
+    iframe.srcdoc = `<!DOCTYPE html><html><head><style>html,body{margin:0;height:100%;overflow:hidden}</style></head><body>${script}</body></html>`;
+    document.querySelectorAll(".chip-fonte").forEach(b => b.classList.toggle("attivo", b.dataset.fonte === fonte));
     $("apri-esterno").href = `https://www.marinetraffic.com/it/ais/home/centerx:${lon}/centery:${lat}/zoom:${zoom}`;
   }
   document.querySelectorAll(".chip-luogo").forEach(b =>
@@ -792,7 +799,7 @@ let ultimoLuogo = null;
 $("chip-fonti").addEventListener("click", e => {
   const b = e.target.closest(".chip-fonte");
   if (!b) return;
-  memoria.scrivi("fonte-voli", b.dataset.fonte);
+  memoria.scrivi("fonte-" + $("mappa-esterna").dataset.tipo, b.dataset.fonte);
   if (ultimoLuogo) mostraMappaEsterna(...ultimoLuogo);
 });
 $("chip-luoghi").addEventListener("click", e => {

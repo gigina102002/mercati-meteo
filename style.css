@@ -392,7 +392,11 @@ svg.icona { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-
   .cielo-temp { font-size: 5rem; }
   .cielo-frase { font-size: 1.05rem; }
   .cielo-giorni { gap: 18px; }
-  .astro { width: 46px; height: 46px; opacity: .7; }
+  .astro { width: 40px; height: 40px; }
+  /* sul telefono l'arco del sole sta sopra le scritte */
+  .cielo-arco { inset: 0 0 auto 0; height: 120px; }
+  .cielo-contenuto { padding-top: 112px; }
+  .cielo-strumenti ~ .cielo-testo { margin-top: 0; }
   .cielo[data-fase="notte"] .astro { width: 36px; height: 36px; }
   .ricerca-wrap { flex: 1 1 100%; }
   .giorno { grid-template-columns: 64px 22px 46px 30px minmax(40px, 1fr) 30px; gap: 8px; }

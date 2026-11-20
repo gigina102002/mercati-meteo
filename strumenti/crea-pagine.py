@@ -10,7 +10,7 @@ MENU = [("index.html", "Home"), ("titoli.html", "I miei titoli"), ("indici.html"
 
 CIELO = '''  <section id="cielo" class="cielo" data-fase="giorno" data-tempo="sereno">
     <div class="cielo-arco" aria-hidden="true">
-      <svg viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M6 80 A44 58 0 0 1 94 80" vector-effect="non-scaling-stroke"/></svg>
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M58 80 A19 58 0 0 1 96 80" vector-effect="non-scaling-stroke"/></svg>
       <span class="astro"></span>
     </div>
     <div class="contenitore cielo-contenuto">
@@ -276,11 +276,11 @@ voli = pagina_mappa("voli", "Voli in tempo reale", "Gli aerei in volo, visti dai
     "Clicca un aereo per vedere volo, quota e velocità. Se la mappa non compare, prova l’altra fonte oppure apri Flightradar24.",
     "Apri su Flightradar24", [("adsblol", "ADSB.lol"), ("airplaneslive", "airplanes.live")])
 
-navi = pagina_mappa("navi", "Navi in tempo reale", "Il traffico marittimo intorno all'Italia, con i dati di MarineTraffic.", [
+navi = pagina_mappa("navi", "Navi in tempo reale", "Il traffico marittimo intorno all'Italia, con i dati AIS di VesselFinder e MarineTraffic.", [
     ("Italia", 41.0, 12.5, 5), ("Golfo di Napoli", 40.70, 14.20, 10), ("Stretto di Messina", 38.20, 15.60, 11),
     ("Genova", 44.35, 8.90, 10), ("Venezia", 45.35, 12.40, 10), ("Mediterraneo", 38.0, 15.0, 4)],
-    "Se la mappa non compare, usa il pulsante “Apri su MarineTraffic”.",
-    "Apri su MarineTraffic")
+    "Tocca una nave per vederne nome, tipo e destinazione. Se la mappa non compare, prova l’altra fonte oppure apri MarineTraffic.",
+    "Apri su MarineTraffic", [("vesselfinder", "VesselFinder"), ("marinetraffic", "MarineTraffic")])
 
 PAGINE = [
   ("index.html", "Home", "Panoramica di mercati, titoli seguiti e meteo.", home),

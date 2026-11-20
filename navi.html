@@ -45,7 +45,7 @@
     <header class="pagina-testa">
       <div>
         <h1>Navi in tempo reale</h1>
-        <p>Il traffico marittimo intorno all'Italia, con i dati di MarineTraffic.</p>
+        <p>Il traffico marittimo intorno all'Italia, con i dati AIS di VesselFinder e MarineTraffic.</p>
       </div>
       <a id="apri-esterno" class="pulsante" href="#" target="_blank" rel="noopener">Apri su MarineTraffic</a>
     </header>
@@ -59,10 +59,10 @@
             <button type="button" class="chip chip-luogo" data-lat="45.35" data-lon="12.4" data-zoom="10">Venezia</button>
             <button type="button" class="chip chip-luogo" data-lat="38.0" data-lon="15.0" data-zoom="4">Mediterraneo</button>
         </div>
-        
+        <div id="chip-fonti" class="chips chips-destra"><span class="muted piccolo etichetta-chips">Fonte</span><button type="button" class="chip chip-fonte" data-fonte="vesselfinder">VesselFinder</button><button type="button" class="chip chip-fonte" data-fonte="marinetraffic">MarineTraffic</button></div>
       </div>
       <iframe id="mappa-esterna" data-tipo="navi" class="mappa mappa-alta" title="Navi in tempo reale" allowfullscreen></iframe>
-      <p class="muted piccolo nota">Se la mappa non compare, usa il pulsante “Apri su MarineTraffic”.</p>
+      <p class="muted piccolo nota">Tocca una nave per vederne nome, tipo e destinazione. Se la mappa non compare, prova l’altra fonte oppure apri MarineTraffic.</p>
     </section>
   </main>
 
