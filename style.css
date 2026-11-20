@@ -204,9 +204,10 @@ svg.icona { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-
 
 /* griglie con righe verticali sottili al posto delle schede */
 .home-griglia, .tre-colonne, .due-colonne { display: grid; gap: 0; }
-.home-griglia { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 1fr); margin-top: 8px; }
+.home-griglia { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); margin-top: 8px; }
+.colonna-sx { display: flex; flex-direction: column; gap: 48px; }
 .tre-colonne { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.due-colonne { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); }
+.due-colonne { grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); }
 .due-colonne-pari { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); }
 .home-griglia > .blocco, .tre-colonne > .blocco, .due-colonne > .blocco { padding: 0 32px; }
 .home-griglia > .blocco:first-child, .tre-colonne > .blocco:first-child, .due-colonne > .blocco:first-child { padding-left: 0; }
@@ -227,8 +228,8 @@ svg.icona { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-
 /* ===== WIDGET TRADINGVIEW ===== */
 .tv-box { position: relative; }
 .tv-box .tradingview-widget-container, .tv-box .tradingview-widget-container__widget { height: 100%; width: 100%; }
-.tv-titoli { height: 540px; }
-.tv-indici-home { height: 540px; }
+.tv-titoli { height: 470px; }
+.tv-indici-home { height: 300px; }
 .tv-grafico { height: 440px; margin-top: 16px; border-radius: 14px; overflow: hidden; }
 .tv-grafico-grande { height: 560px; }
 .tv-indici { height: 480px; }

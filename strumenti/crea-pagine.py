@@ -72,7 +72,7 @@ def pagina(file, titolo, descrizione, contenuto, cielo=""):
     <div class="contenitore piede-interno">
       <p><strong>Mercati e Meteo</strong><br><span class="muted">Dati aggiornati automaticamente durante la giornata.</span></p>
       <p class="muted piccolo">Fonti: TradingView, CoinGecko, Banca Centrale Europea (Frankfurter), ExchangeRate-API, Open-Meteo, Windy, Meteociel, ADSB.lol, airplanes.live, MarineTraffic.<br>
-      Le quotazioni di borsa possono essere ritardate. Le informazioni servono solo a scopo informativo e non sono consulenza finanziaria.</p>
+      Le quotazioni di borsa possono essere di fine giornata o ritardate. Le informazioni servono solo a scopo informativo e non sono consulenza finanziaria.</p>
     </div>
   </footer>
 
@@ -99,14 +99,16 @@ def blocco_testa(titolo, link_testo="", link_href=""):
 
 # ---------------- HOME ----------------
 home = '''    <div class="home-griglia">
-      <section class="blocco">
-        ''' + blocco_testa("I miei titoli", "Grafici", "titoli.html") + '''
-        <div class="tv-box tv-titoli" id="tv-titoli"></div>
-      </section>
-      <section class="blocco">
-        ''' + blocco_testa("Borse", "Tutti gli indici", "indici.html") + '''
-        <div class="tv-box tv-indici-home" id="tv-indici-home"></div>
-      </section>
+      <div class="blocco colonna-sx">
+        <section>
+          ''' + blocco_testa("I miei titoli", "Grafici", "titoli.html") + '''
+          <div class="tv-box tv-titoli" id="tv-titoli"></div>
+        </section>
+        <section>
+          ''' + blocco_testa("Borse", "Tutti gli indici", "indici.html") + '''
+          <div class="tv-box tv-indici-home" id="tv-indici-home"></div>
+        </section>
+      </div>
       <section class="blocco">
         ''' + blocco_testa("Crypto", "Classifica", "crypto.html") + '''
         <ol id="crypto-lista" class="lista"><li class="scheletro h-lista"></li></ol>
@@ -116,7 +118,7 @@ home = '''    <div class="home-griglia">
     </div>'''
 
 # ---------------- I MIEI TITOLI ----------------
-titoli = testa("I miei titoli", "Le azioni, gli ETF e le crypto che segui. Le quotazioni di borsa arrivano con circa 15 minuti di ritardo.") + '''
+titoli = testa("I miei titoli", "Le azioni, gli ETF e le crypto che segui. Per azioni ed ETF i prezzi sono quelli di chiusura (la piccola E accanto al prezzo); le crypto sono in tempo reale.") + '''
     <div class="due-colonne">
       <section class="blocco">
         <div class="tv-box tv-titoli" id="tv-titoli"></div>
