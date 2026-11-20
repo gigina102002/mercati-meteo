@@ -100,6 +100,7 @@ ZONE = [
     # argomenti: sezioni ufficiali di Google News
     ("scienza", "Scienza", GN + "/headlines/section/topic/SCIENCE?" + urllib.parse.urlencode(PARAMETRI)),
     ("tecnologia", "Tecnologia", GN + "/headlines/section/topic/TECHNOLOGY?" + urllib.parse.urlencode(PARAMETRI)),
+    ("salute", "Salute", GN + "/headlines/section/topic/HEALTH?" + urllib.parse.urlencode(PARAMETRI)),
 ]
 
 
