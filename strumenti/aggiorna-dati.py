@@ -82,33 +82,67 @@ ARGOMENTI_NOTIZIE = [
 ]
 
 
-def notizie():
-    uscita = {"aggiornato": adesso(), "argomenti": []}
-    for chiave, nome, ricerca in ARGOMENTI_NOTIZIE:
-        url = "https://news.google.com/rss/search?" + urllib.parse.urlencode(
-            {"q": ricerca + " when:3d", "hl": "it", "gl": "IT", "ceid": "IT:it"})
-        voci = []
+GN = "https://news.google.com/rss"
+PARAMETRI = {"hl": "it", "gl": "IT", "ceid": "IT:it"}
+
+# Zone del mondo: (chiave, nome, indirizzo del feed di Google News)
+def ricerca(q):
+    return GN + "/search?" + urllib.parse.urlencode({"q": q + " when:1d", **PARAMETRI})
+
+ZONE = [
+    ("mondo", "Tutto il mondo", GN + "/headlines/section/topic/WORLD?" + urllib.parse.urlencode(PARAMETRI)),
+    ("italia", "Italia", GN + "/headlines/section/topic/NATION?" + urllib.parse.urlencode(PARAMETRI)),
+    ("europa", "Europa", ricerca("Europa OR UE OR Bruxelles OR Germania OR Francia OR Spagna OR Ucraina OR Regno Unito")),
+    ("americhe", "Americhe", ricerca("\"Stati Uniti\" OR \"Casa Bianca\" OR Canada OR Messico OR Brasile OR Argentina OR Venezuela")),
+    ("asia", "Asia e Oceania", ricerca("Cina OR Giappone OR India OR Corea OR Taiwan OR Indonesia OR Australia OR Pakistan")),
+    ("medio-oriente", "Medio Oriente", ricerca("Israele OR Gaza OR Iran OR Libano OR Siria OR \"Arabia Saudita\" OR Iraq OR Yemen")),
+    ("africa", "Africa", ricerca("Africa OR Egitto OR Nigeria OR Sudafrica OR Libia OR Sudan OR Etiopia OR Congo")),
+]
+
+
+def leggi_feed(url, escludi=()):
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+    with urllib.request.urlopen(req, timeout=20) as r:
+        radice = ET.fromstring(r.read())
+    voci, visti = [], set()
+    for item in radice.iter("item"):
+        titolo = (item.findtext("title") or "").translate(INVISIBILI).strip()
+        fonte = (item.findtext("source") or "").strip()
+        if fonte and titolo.endswith(" - " + fonte):
+            titolo = titolo[: -len(" - " + fonte)]
+        if not titolo or titolo in visti or any(p in titolo.lower() for p in escludi):
+            continue
+        visti.add(titolo)
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-            with urllib.request.urlopen(req, timeout=20) as r:
-                radice = ET.fromstring(r.read())
-            for item in radice.iter("item"):
-                titolo = (item.findtext("title") or "").translate(INVISIBILI).strip()
-                if any(parola in titolo.lower() for parola in ESCLUDI.get(chiave, ())):
-                    continue
-                fonte = (item.findtext("source") or "").strip()
-                if fonte and titolo.endswith(" - " + fonte):
-                    titolo = titolo[: -len(" - " + fonte)]
-                try:
-                    data = parsedate_to_datetime(item.findtext("pubDate")).isoformat()
-                except Exception:
-                    data = None
-                voci.append({"titolo": titolo, "fonte": fonte, "link": item.findtext("link"), "data": data})
+            data = parsedate_to_datetime(item.findtext("pubDate")).isoformat()
+        except Exception:
+            data = None
+        voci.append({"titolo": titolo, "fonte": fonte, "link": item.findtext("link"), "data": data})
+    voci.sort(key=lambda v: v["data"] or "", reverse=True)
+    return voci
+
+
+def notizie():
+    uscita = {"aggiornato": adesso(), "zone": []}
+    for chiave, nome, url in ZONE:
+        try:
+            voci = leggi_feed(url)[:15]
         except Exception as e:
             print(f"Notizie {nome}: {e}", file=sys.stderr)
-        voci.sort(key=lambda v: v["data"] or "", reverse=True)
-        uscita["argomenti"].append({"chiave": chiave, "nome": nome, "notizie": voci[:8]})
+            voci = []
+        uscita["zone"].append({"chiave": chiave, "nome": nome, "notizie": voci})
         time.sleep(0.5)
+    # Economia e i miei titoli: le notizie finanziarie di prima, unite e con l'argomento accanto
+    economia = []
+    for chiave, nome, q in ARGOMENTI_NOTIZIE:
+        try:
+            url = GN + "/search?" + urllib.parse.urlencode({"q": q + " when:3d", **PARAMETRI})
+            economia += [{**v, "argomento": nome} for v in leggi_feed(url, ESCLUDI.get(chiave, ()))[:5]]
+        except Exception as e:
+            print(f"Notizie {nome}: {e}", file=sys.stderr)
+        time.sleep(0.5)
+    economia.sort(key=lambda v: v["data"] or "", reverse=True)
+    uscita["zone"].append({"chiave": "economia", "nome": "Economia e i miei titoli", "notizie": economia})
     return uscita
 
 

@@ -3,7 +3,7 @@ name: Aggiorna i dati di borsa
 on:
   schedule:
     - cron: "*/20 6-17 * * 1-5"   # ogni 20 minuti durante le ore di borsa europee (orari UTC), dal lunedì al venerdì
-    - cron: "30 22 * * *"         # una volta a sera, tutti i giorni (borse asiatiche e americane)
+    - cron: "5 * * * *"           # ogni ora, tutti i giorni (notizie, crypto, borse asiatiche e americane)
   workflow_dispatch:              # pulsante "Run workflow" per lanciarlo a mano
   push:
     branches: [main]
