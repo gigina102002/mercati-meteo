@@ -1,0 +1,35 @@
+name: Aggiorna i dati di borsa
+
+on:
+  schedule:
+    - cron: "*/20 6-17 * * 1-5"   # ogni 20 minuti durante le ore di borsa europee (orari UTC), dal lunedì al venerdì
+    - cron: "30 22 * * *"         # una volta a sera, tutti i giorni (borse asiatiche e americane)
+  workflow_dispatch:              # pulsante "Run workflow" per lanciarlo a mano
+  push:
+    branches: [main]
+    paths: ["strumenti/aggiorna-dati.py", ".github/workflows/dati.yml"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: dati
+  cancel-in-progress: true
+
+jobs:
+  aggiorna:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scarica i prezzi
+        run: python3 strumenti/aggiorna-dati.py uscita/titoli.json
+      - name: Pubblica i dati sul ramo "dati"
+        run: |
+          cd uscita
+          git init -q -b dati
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add titoli.json
+          git commit -q -m "Dati di borsa aggiornati"
+          git push -q -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" dati
