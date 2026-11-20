@@ -6,7 +6,7 @@ il file dal ramo "dati" del repository. Uso:  python3 strumenti/aggiorna-dati.py
 Per aggiungere un titolo: aggiungi una riga qui sotto (simbolo Yahoo, nome)
 e la stessa voce in I_MIEI_TITOLI dentro app.js.
 """
-import json, sys, time, urllib.request, urllib.parse, datetime
+import json, os, sys, time, datetime
 
 TITOLI = [
     ("ENEL.MI", "Enel"),
@@ -24,42 +24,36 @@ INDICI = [
     ("^DJI", "Dow Jones"), ("^N225", "Nikkei 225"), ("^HSI", "Hang Seng"),
     ("000001.SS", "Shanghai Composite"), ("^BSESN", "Sensex"),
 ]
-HOSTS = ["query1.finance.yahoo.com", "query2.finance.yahoo.com"]
-UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
+import yfinance as yf   # installata dall'automazione (vedi .github/workflows/dati.yml)
 
 
-def scarica(simbolo, intervallo, periodo):
-    errore = None
-    for host in HOSTS:
-        url = f"https://{host}/v8/finance/chart/{urllib.parse.quote(simbolo)}?interval={intervallo}&range={periodo}"
-        try:
-            req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "application/json"})
-            with urllib.request.urlopen(req, timeout=20) as r:
-                return json.load(r)["chart"]["result"][0]
-        except Exception as e:  # prova l'altro server
-            errore = e
-            time.sleep(1)
-    raise errore
-
-
-def chiusure(risultato):
-    valori = risultato.get("indicators", {}).get("quote", [{}])[0].get("close") or []
-    return [round(v, 6) for v in valori if v is not None]
+def numero(v):
+    try:
+        v = float(v)
+        return None if v != v else v   # scarta i "NaN"
+    except (TypeError, ValueError):
+        return None
 
 
 def leggi(simbolo, nome):
-    oggi = scarica(simbolo, "5m", "1d")
-    meta = oggi["meta"]
-    prezzo = meta.get("regularMarketPrice")
-    prec = meta.get("previousClose") or meta.get("chartPreviousClose")
-    storico = chiusure(scarica(simbolo, "1d", "3mo"))
+    t = yf.Ticker(simbolo)
+    storico_df = t.history(period="3mo", interval="1d", auto_adjust=False)
+    if storico_df.empty:
+        raise ValueError("nessun dato")
+    storico = [round(v, 6) for v in storico_df["Close"].dropna().tolist()]
+    oggi_df = t.history(period="1d", interval="5m", auto_adjust=False)
+    oggi = [round(v, 6) for v in oggi_df["Close"].dropna().tolist()] if not oggi_df.empty else []
+    info = t.fast_info
+    prezzo = numero(getattr(info, "last_price", None)) or storico[-1]
+    prec = numero(getattr(info, "previous_close", None)) or (storico[-2] if len(storico) > 1 else None)
+    ultimo = (oggi_df if not oggi_df.empty else storico_df).index[-1]
     return {
-        "simbolo": simbolo, "nome": nome, "valuta": meta.get("currency"),
+        "simbolo": simbolo, "nome": nome, "valuta": getattr(info, "currency", None),
         "prezzo": prezzo, "chiusura_prec": prec,
-        "var": (prezzo - prec) if prezzo is not None and prec else None,
-        "var_pct": ((prezzo / prec - 1) * 100) if prezzo is not None and prec else None,
-        "ora": meta.get("regularMarketTime"),
-        "oggi": chiusure(oggi), "storico": storico,
+        "var": (prezzo - prec) if prec else None,
+        "var_pct": ((prezzo / prec - 1) * 100) if prec else None,
+        "ora": int(ultimo.timestamp()),
+        "oggi": oggi, "storico": storico,
     }
 
 
@@ -78,7 +72,6 @@ def main():
             time.sleep(0.4)
     if riusciti == 0:
         sys.exit("Nessun dato scaricato: lascio invariato il file pubblicato.")
-    import os
     os.makedirs(os.path.dirname(uscita) or ".", exist_ok=True)
     with open(uscita, "w") as f:
         json.dump(dati, f, ensure_ascii=False, separators=(",", ":"))

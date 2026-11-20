@@ -22,6 +22,11 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Installa yfinance
+        run: pip install --quiet "yfinance>=0.2.54"
       - name: Scarica i prezzi
         run: python3 strumenti/aggiorna-dati.py uscita/titoli.json
       - name: Pubblica i dati sul ramo "dati"
