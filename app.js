@@ -502,7 +502,7 @@ function disegnaTitoli() {
   $("titoli-corpo").innerHTML = gruppi.map(g => `
     <tr class="riga-gruppo"><th colspan="4" scope="rowgroup">${esc(g.gruppo)}</th></tr>` + g.righe.map(({ x, d }) => `
     <tr class="riga-titolo${x.s === simboloGrafico ? " scelto" : ""}" data-s="${esc(x.s)}" tabindex="0" aria-label="Mostra il grafico di ${esc(x.d)}">
-      <td><span class="moneta-nome">${esc(x.d)}</span><span class="titolo-codice">${esc(x.s.split(":")[1])}${d?.tempoReale ? " · tempo reale" : ""}</span></td>
+      <td><span class="moneta-nome">${esc(x.d)}</span><span class="titolo-codice">${esc(x.s.split(":")[1])}${d?.tempoReale ? ", tempo reale, variazione su 24 ore" : ""}</span></td>
       <td class="destra"><strong>${d ? fmtPrezzo(d.prezzo, d.valuta) : "—"}</strong></td>
       <td class="destra"><span class="${(d?.var ?? 0) >= 0 ? "su" : "giu"}">${d ? fmtVar(d.var) : ""}</span><br>${badgeVariazione(d?.var_pct)}</td>
       <td class="nascondi-mobile"><div class="sparkline-cella">${d?.storico?.length ? sparkline(d.storico, 76, 30) : ""}</div></td>
