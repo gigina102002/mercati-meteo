@@ -68,12 +68,16 @@ def leggi(simbolo, nome):
 import urllib.request, urllib.parse, xml.etree.ElementTree as ET
 from email.utils import parsedate_to_datetime
 
+# parole che indicano notizie fuori tema (es. la missione spaziale Hera)
+ESCLUDI = {"hera": ("asteroide", "didymos", "dimorphos", "sonda", "esa ", "spazial", "dart")}
+INVISIBILI = dict.fromkeys(map(ord, "\u200b\u200c\u200d\u200e\u200f\u2060\u2061\u2062\u2063\u2064\ufeff"), None)
+
 ARGOMENTI_NOTIZIE = [
     # intitle: = la parola deve stare nel titolo dell'articolo (notizie più pertinenti)
     ("mercati", "Mercati", "intitle:\"Piazza Affari\" OR intitle:\"Ftse Mib\" OR intitle:\"Borsa di Milano\""),
     ("enel", "Enel", "intitle:Enel"),
     ("intesa", "Intesa Sanpaolo", "intitle:\"Intesa Sanpaolo\""),
-    ("hera", "Hera", "intitle:\"Gruppo Hera\" OR (intitle:Hera multiutility) OR (intitle:Hera azioni)"),
+    ("hera", "Hera", "\"Gruppo Hera\" OR \"Hera spa\" OR \"Hera Comm\" OR (Hera multiutility) -asteroide -Didymos -sonda -ESA"),
     ("crypto", "Crypto", "intitle:Bitcoin OR intitle:criptovalute"),
 ]
 
@@ -89,7 +93,9 @@ def notizie():
             with urllib.request.urlopen(req, timeout=20) as r:
                 radice = ET.fromstring(r.read())
             for item in radice.iter("item"):
-                titolo = (item.findtext("title") or "").strip()
+                titolo = (item.findtext("title") or "").translate(INVISIBILI).strip()
+                if any(parola in titolo.lower() for parola in ESCLUDI.get(chiave, ())):
+                    continue
                 fonte = (item.findtext("source") or "").strip()
                 if fonte and titolo.endswith(" - " + fonte):
                     titolo = titolo[: -len(" - " + fonte)]
