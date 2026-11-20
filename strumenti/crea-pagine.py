@@ -8,7 +8,7 @@ def versione(nome):
 V_CSS, V_JS = versione("style.css"), versione("app.js")
 
 MENU = [("index.html", "Home"), ("titoli.html", "I miei titoli"), ("indici.html", "Indici"),
-        ("crypto.html", "Crypto"), ("valute.html", "Valute"), ("meteo.html", "Meteo"),
+        ("crypto.html", "Crypto"), ("valute.html", "Valute"), ("notizie.html", "Notizie"), ("meteo.html", "Meteo"),
         ("voli.html", "Voli"), ("navi.html", "Navi")]
 
 
@@ -102,7 +102,11 @@ def blocco_testa(titolo, link_testo="", link_href=""):
 
 
 # ---------------- HOME ----------------
-home = '''    <div class="home-griglia">
+home = '''    <section id="avvisi" class="avvisi" hidden aria-live="polite">
+      <div class="blocco-testa"><h2>Avvisi di oggi</h2><span class="muted piccolo">Ti arrivano anche per email da GitHub</span></div>
+      <ul id="avvisi-lista" class="avvisi-lista"></ul>
+    </section>
+    <div class="home-griglia">
       <div class="blocco colonna-sx">
         <section>
           ''' + blocco_testa("I miei titoli", "Grafici", "titoli.html") + '''
@@ -120,8 +124,11 @@ home = '''    <div class="home-griglia">
         ''' + blocco_testa("Cambi", "Convertitore", "valute.html") + '''
         <ol id="cambi-lista" class="lista"><li class="scheletro h-lista"></li></ol>
       </section>
-    </div>'''
-
+    </div>
+    <section class="sezione">
+      ''' + blocco_testa("Ultime notizie", "Tutte le notizie", "notizie.html") + '''
+      <ol id="notizie-home" class="notizie notizie-due"><li class="scheletro h-lista"></li></ol>
+    </section>'''
 # ---------------- I MIEI TITOLI ----------------
 titoli = testa("I miei titoli", "Le azioni, gli ETF e le crypto che segui. Tocca un titolo per vederne il grafico.") + '''
     <div class="due-colonne">
@@ -147,8 +154,28 @@ titoli = testa("I miei titoli", "Le azioni, gli ETF e le crypto che segui. Tocca
         ''' + blocco_testa("Grafico") + '''
         <div class="tv-box tv-grafico tv-grafico-grande" id="tv-grafico"></div>
       </section>
-    </div>'''
+    </div>
 
+    <section class="sezione">
+      ''' + blocco_testa("Dividendi e appuntamenti") + '''
+      <div class="tabella-scroll">
+        <table class="tabella">
+          <thead>
+            <tr>
+              <th scope="col">Titolo</th>
+              <th scope="col">Prossimo stacco cedola</th>
+              <th class="destra" scope="col">Ultimo dividendo</th>
+              <th class="destra" scope="col">Rendimento 12 mesi</th>
+              <th class="nascondi-mobile" scope="col">Prossimi conti</th>
+            </tr>
+          </thead>
+          <tbody id="calendario-corpo">
+            <tr><td colspan="5"><div class="scheletro h-lista"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="nota muted piccolo">Dati Yahoo Finance, aggiornati automaticamente. Il rendimento è la somma dei dividendi degli ultimi 12 mesi divisa per il prezzo di oggi. Le date annunciate dalle società possono cambiare.</p>
+    </section>'''
 # ---------------- INDICI ----------------
 indici = testa("Indici di borsa", "L'ultimo mese in Europa, negli Stati Uniti e in Asia. Tocca un indice per vederne il grafico.") + '''
     <div class="tre-colonne">
@@ -222,6 +249,10 @@ valute = testa("Valute", "I cambi di riferimento della Banca Centrale Europea e 
         </div>
       </section>
     </div>'''
+
+# ---------------- NOTIZIE ----------------
+notizie = testa("Notizie", "Gli articoli degli ultimi tre giorni sui mercati e sui tuoi titoli, raccolti da Google News. Ogni notizia si apre sul sito del giornale.", '<span id="notizie-agg" class="aggiornato"></span>') + '''
+    <div id="notizie-argomenti" class="notizie-griglia"><div class="scheletro h-righe"></div></div>'''
 
 # ---------------- METEO ----------------
 RICERCA = '''<div class="cielo-strumenti">
@@ -307,6 +338,7 @@ PAGINE = [
   ("indici.html", "Indici di borsa", "Indici di borsa di Europa, Stati Uniti e Asia.", indici),
   ("crypto.html", "Criptovalute", "Prezzi delle principali criptovalute in euro.", crypto),
   ("valute.html", "Valute", "Cambi valute BCE e convertitore.", valute),
+  ("notizie.html", "Notizie", "Le ultime notizie sui mercati e sui titoli seguiti.", notizie),
   ("meteo.html", "Meteo", "Meteo attuale, previsioni orarie e a 7 giorni, radar e carte dei modelli.", meteo),
   ("voli.html", "Voli", "Mappa degli aerei in volo in tempo reale.", voli),
   ("navi.html", "Navi", "Mappa del traffico marittimo in tempo reale.", navi),

@@ -361,8 +361,10 @@ svg.icona { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-
 .piede-interno { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 32px; }
 
 /* ===== RESPONSIVE ===== */
-@media (max-width: 1100px) {
+@media (max-width: 1340px) {
   .orologio { display: none; }
+}
+@media (max-width: 1100px) {
   .menu { gap: 16px; }
 }
 @media (max-width: 1000px) {
@@ -432,3 +434,31 @@ svg.icona { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-
 .tabella-titoli th, .tabella-titoli td { padding-left: 8px; padding-right: 8px; }
 .tabella-titoli td:first-child { white-space: normal; min-width: 150px; }
 .tabella-titoli .riga-titolo.scelto td:first-child { padding-left: 12px; }
+
+/* ===== AVVISI (Home) ===== */
+.avvisi { margin-top: 8px; margin-bottom: 48px; padding: 20px 24px; border-radius: 16px; background: var(--schiuma); border-left: 3px solid var(--corallo); }
+.avvisi[hidden] { display: none; }
+.avvisi-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.avviso { display: grid; grid-template-columns: 22px 1fr; gap: 12px; align-items: start; }
+.avviso-icona { color: var(--corallo); padding-top: 2px; }
+.avviso strong { font-weight: 500; }
+.avviso-testo { display: block; color: var(--muted); font-size: .92rem; }
+
+/* ===== NOTIZIE ===== */
+.notizie { list-style: none; margin: 0; padding: 0; }
+.notizia { padding: 12px 0; border-bottom: 1px solid var(--linea); }
+.notizia:last-child { border-bottom: 0; }
+.notizia a { color: var(--testo); font-weight: 500; line-height: 1.4; }
+.notizia a:hover { color: var(--mare); }
+.notizia-meta { display: block; margin-top: 4px; color: var(--muted); font-size: .85rem; }
+.notizie-due { columns: 2; column-gap: 48px; }
+.notizie-due .notizia { break-inside: avoid; }
+.notizie-griglia { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 48px 0; }
+.notizie-griglia > .blocco { padding: 0 32px; border-left: 1px solid var(--linea); }
+.notizie-griglia > .blocco:nth-child(3n+1) { padding-left: 0; border-left: 0; }
+.notizie-griglia > .blocco:nth-child(3n) { padding-right: 0; }
+@media (max-width: 1000px) {
+  .notizie-griglia { grid-template-columns: minmax(0, 1fr); gap: 40px; }
+  .notizie-griglia > .blocco { padding: 0; border-left: 0; }
+  .notizie-due { columns: 1; }
+}

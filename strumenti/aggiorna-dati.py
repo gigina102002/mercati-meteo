@@ -69,11 +69,12 @@ import urllib.request, urllib.parse, xml.etree.ElementTree as ET
 from email.utils import parsedate_to_datetime
 
 ARGOMENTI_NOTIZIE = [
-    ("mercati", "Mercati", "Piazza Affari OR \"Borsa di Milano\" OR FTSE MIB"),
-    ("enel", "Enel", "Enel azioni OR Enel borsa"),
-    ("intesa", "Intesa Sanpaolo", "\"Intesa Sanpaolo\""),
-    ("hera", "Hera", "\"Gruppo Hera\" OR \"Hera spa\""),
-    ("crypto", "Crypto", "Bitcoin OR criptovalute"),
+    # intitle: = la parola deve stare nel titolo dell'articolo (notizie più pertinenti)
+    ("mercati", "Mercati", "intitle:\"Piazza Affari\" OR intitle:\"Ftse Mib\" OR intitle:\"Borsa di Milano\""),
+    ("enel", "Enel", "intitle:Enel"),
+    ("intesa", "Intesa Sanpaolo", "intitle:\"Intesa Sanpaolo\""),
+    ("hera", "Hera", "intitle:\"Gruppo Hera\" OR (intitle:Hera multiutility) OR (intitle:Hera azioni)"),
+    ("crypto", "Crypto", "intitle:Bitcoin OR intitle:criptovalute"),
 ]
 
 
@@ -134,7 +135,8 @@ def calendario(prezzi):
             if div is not None and len(div):
                 voce["dividendi"] = [{"data": d.date().isoformat(), "importo": round(float(v), 4)}
                                      for d, v in div.tail(6).items()][::-1]
-                limite = div.index[-1] - datetime.timedelta(days=365)
+                # dividendi staccati negli ultimi 365 giorni (contando da oggi)
+                limite = datetime.datetime.now(div.index.tz) - datetime.timedelta(days=365)
                 ultimi = div[div.index > limite]
                 prezzo = (prezzi.get(simbolo) or {}).get("prezzo")
                 if prezzo:
@@ -174,7 +176,7 @@ def avvisi(prezzi):
             segno = "+" if v > 0 else "−"
             elenco.append({"tipo": "titolo", "chiave": f"{simbolo}-{oggi}",
                            "titolo": f"{d['nome']} {segno}{it(abs(v), 1)}% oggi",
-                           "testo": f"{d['nome']} è a {it(d['prezzo'], 3)} ({segno}{it(abs(v))}% rispetto alla chiusura precedente)."})
+                           "testo": f"{d['nome']} è a {prezzo_it(d['prezzo'])} ({segno}{it(abs(v))}% rispetto alla chiusura precedente)."})
     nome, lat, lon = CITTA_METEO
     try:
         url = (f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}"
@@ -228,6 +230,13 @@ def apri_issue(avviso):
 def it(v, decimali=2):
     """Numero all'italiana: virgola per i decimali."""
     return f"{v:.{decimali}f}".replace(".", ",")
+
+
+def prezzo_it(v):
+    """Prezzo leggibile: 58.596 / 159,34 / 5,901 / 0,02772"""
+    decimali = 0 if v >= 1000 else 2 if v >= 100 else 3 if v >= 1 else 5
+    testo = f"{v:,.{decimali}f}"
+    return testo.replace(",", "X").replace(".", ",").replace("X", ".")
 
 
 def adesso():

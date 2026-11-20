@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=6088632d">
+  <link rel="stylesheet" href="style.css?v=3bc22408">
 </head>
 <body>
   <header class="topbar">
@@ -28,6 +28,7 @@
         <a href="indici.html">Indici</a>
         <a href="crypto.html">Crypto</a>
         <a href="valute.html">Valute</a>
+        <a href="notizie.html">Notizie</a>
         <a href="meteo.html">Meteo</a>
         <a href="voli.html">Voli</a>
         <a href="navi.html">Navi</a>
@@ -73,6 +74,27 @@
         <div class="tv-box tv-grafico tv-grafico-grande" id="tv-grafico"></div>
       </section>
     </div>
+
+    <section class="sezione">
+      <div class="blocco-testa"><h2>Dividendi e appuntamenti</h2></div>
+      <div class="tabella-scroll">
+        <table class="tabella">
+          <thead>
+            <tr>
+              <th scope="col">Titolo</th>
+              <th scope="col">Prossimo stacco cedola</th>
+              <th class="destra" scope="col">Ultimo dividendo</th>
+              <th class="destra" scope="col">Rendimento 12 mesi</th>
+              <th class="nascondi-mobile" scope="col">Prossimi conti</th>
+            </tr>
+          </thead>
+          <tbody id="calendario-corpo">
+            <tr><td colspan="5"><div class="scheletro h-lista"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="nota muted piccolo">Dati Yahoo Finance, aggiornati automaticamente. Il rendimento è la somma dei dividendi degli ultimi 12 mesi divisa per il prezzo di oggi. Le date annunciate dalle società possono cambiare.</p>
+    </section>
   </main>
 
   <footer class="piede">
@@ -83,6 +105,6 @@
     </div>
   </footer>
 
-  <script src="app.js?v=82e9b49d"></script>
+  <script src="app.js?v=0683a255"></script>
 </body>
 </html>

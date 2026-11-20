@@ -411,7 +411,8 @@ function disegnaWidget() {
 // Borsa: file aggiornato ogni 20 minuti da GitHub Actions (prezzi Yahoo, circa 15 minuti di ritardo)
 // Crypto: Binance in tempo reale. Se i dati mancano, si torna ai riquadri TradingView.
 // =========================================================
-const URL_DATI = "https://raw.githubusercontent.com/gigina102002/mercati-meteo/dati/titoli.json";
+const BASE_DATI = "https://raw.githubusercontent.com/gigina102002/mercati-meteo/dati/";
+const URL_DATI = BASE_DATI + "titoli.json";
 const INDICI_HOME = ["FTSEMIB.MI", "^STOXX50E", "^GDAXI", "^GSPC", "^NDX", "^N225"];
 const VALUTE_SIMBOLO = { EUR: "€", USD: "$", GBP: "£", JPY: "¥" };
 
@@ -536,6 +537,82 @@ function usaRiserva() {
   $("titoli-nota").textContent = "";
   $("titoli-agg").textContent = "";
   disegnaWidget();
+}
+
+// =========================================================
+// NOTIZIE, DIVIDENDI E AVVISI (file preparati da GitHub Actions)
+// =========================================================
+const leggiDati = nome => scaricaJson(BASE_DATI + nome + "?v=" + Math.floor(Date.now() / 60000));
+
+function tempoFa(iso) {
+  if (!iso) return "";
+  const minuti = Math.round((Date.now() - new Date(iso)) / 60000);
+  if (minuti < 60) return minuti <= 1 ? "adesso" : `${minuti} minuti fa`;
+  const ore = Math.round(minuti / 60);
+  if (ore < 24) return ore === 1 ? "un'ora fa" : `${ore} ore fa`;
+  const giorni = Math.round(ore / 24);
+  return giorni === 1 ? "ieri" : `${giorni} giorni fa`;
+}
+const dataBreve = iso => iso ? new Date(iso + (iso.length === 10 ? "T12:00" : "")).toLocaleDateString("it-IT", { day: "numeric", month: "short", year: "numeric" }) : "";
+
+function rigaNotizia(n, argomento) {
+  const meta = [n.fonte, tempoFa(n.data), argomento].filter(Boolean).join(", ");
+  return `<li class="notizia"><a href="${esc(n.link)}" target="_blank" rel="noopener">${esc(n.titolo)}</a><span class="notizia-meta">${esc(meta)}</span></li>`;
+}
+
+async function caricaNotizie() {
+  let dati;
+  try { dati = await leggiDati("notizie.json"); } catch (e) { dati = null; }
+  const vuoto = `<li class="muted">Le notizie non sono disponibili in questo momento.</li>`;
+  if (!dati) { $("notizie-home").innerHTML = vuoto; $("notizie-argomenti").innerHTML = `<p class="muted">Le notizie non sono disponibili in questo momento.</p>`; return; }
+
+  // Home: 6 notizie, al massimo 2 per argomento, dalle più recenti
+  const visti = new Set(), perArgomento = {};
+  const scelte = dati.argomenti.flatMap(a => a.notizie.map(n => ({ n, a: a.nome })))
+    .sort((x, y) => (y.n.data || "").localeCompare(x.n.data || ""))
+    .filter(({ n, a }) => {
+      if (visti.has(n.titolo) || (perArgomento[a] || 0) >= 2) return false;
+      visti.add(n.titolo); perArgomento[a] = (perArgomento[a] || 0) + 1; return true;
+    });
+  $("notizie-home").innerHTML = scelte.slice(0, 6).map(({ n, a }) => rigaNotizia(n, a)).join("") || vuoto;
+
+  // Pagina Notizie: una colonna per argomento
+  $("notizie-argomenti").innerHTML = dati.argomenti.map(a => `
+    <section class="blocco">
+      <div class="blocco-testa"><h2>${esc(a.nome)}</h2></div>
+      <ol class="notizie">${a.notizie.map(n => rigaNotizia(n)).join("") || '<li class="muted">Nessuna notizia negli ultimi 3 giorni.</li>'}</ol>
+    </section>`).join("");
+  $("notizie-agg").textContent = "Aggiornate " + tempoFa(dati.aggiornato);
+}
+
+async function caricaCalendario() {
+  let dati;
+  try { dati = await leggiDati("calendario.json"); } catch (e) { dati = null; }
+  if (!dati) { $("calendario-corpo").innerHTML = `<tr><td colspan="5" class="muted">Dividendi e appuntamenti non disponibili in questo momento.</td></tr>`; return; }
+  const oggi = new Date().toISOString().slice(0, 10);
+  const futura = d => d && d >= oggi ? dataBreve(d) : "";
+  $("calendario-corpo").innerHTML = Object.values(dati.titoli).map(t => {
+    const ultimo = t.dividendi[0];
+    const nessuno = !t.dividendi.length;
+    return `<tr>
+      <td><span class="moneta-nome">${esc(t.nome)}</span></td>
+      <td>${nessuno ? '<span class="muted">Non distribuisce dividendi</span>' : (futura(t.prossimo_stacco) || '<span class="muted">Non ancora annunciato</span>')}</td>
+      <td class="destra">${ultimo ? `${ultimo.importo.toLocaleString("it-IT", { maximumFractionDigits: 4 })} €<span class="titolo-codice">${dataBreve(ultimo.data)}</span>` : "—"}</td>
+      <td class="destra">${t.rendimento_12m != null ? t.rendimento_12m.toLocaleString("it-IT", { maximumFractionDigits: 2 }) + "%" : "—"}</td>
+      <td class="nascondi-mobile">${futura(t.prossimi_conti) || '<span class="muted">Non ancora annunciati</span>'}</td>
+    </tr>`;
+  }).join("");
+}
+
+async function caricaAvvisi() {
+  let dati;
+  try { dati = await leggiDati("avvisi.json"); } catch (e) { return; }
+  const elenco = dati?.avvisi || [];
+  if (!elenco.length) { $("avvisi").hidden = true; return; }
+  $("avvisi").hidden = false;
+  $("avvisi-lista").innerHTML = elenco.map(a => `
+    <li class="avviso"><span class="avviso-icona ${a.tipo === "meteo" ? "c-temporale" : ""}">${icona(a.tipo === "meteo" ? "temporale" : "pressione")}</span>
+      <span><strong>${esc(a.titolo)}</strong><span class="avviso-testo">${esc(a.testo)}</span></span></li>`).join("");
 }
 
 // =========================================================
@@ -963,6 +1040,15 @@ if (esiste("mappa-esterna")) {
 if (esiste("titoli-lista") || esiste("titoli-corpo")) {
   caricaTitoli();
   setInterval(caricaTitoli, 60000);                  // ogni minuto (le crypto cambiano spesso)
+}
+if (esiste("notizie-home") || esiste("notizie-argomenti")) {
+  caricaNotizie();
+  setInterval(caricaNotizie, 10 * 60 * 1000);
+}
+if (esiste("calendario-corpo")) caricaCalendario();
+if (esiste("avvisi")) {
+  caricaAvvisi();
+  setInterval(caricaAvvisi, 10 * 60 * 1000);
 }
 if (esiste("cielo") && !esiste("meteo-corpo")) {
   caricaMeteoMini(cittaIniziale);
