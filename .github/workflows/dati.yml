@@ -11,6 +11,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 concurrency:
   group: dati
@@ -28,6 +29,8 @@ jobs:
       - name: Installa yfinance
         run: pip install --quiet "yfinance>=0.2.54"
       - name: Scarica i prezzi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python3 strumenti/aggiorna-dati.py uscita/titoli.json
       - name: Pubblica i dati sul ramo "dati"
         run: |
@@ -35,6 +38,6 @@ jobs:
           git init -q -b dati
           git config user.name "github-actions[bot]"
           git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
-          git add titoli.json
+          git add -A
           git commit -q -m "Dati di borsa aggiornati"
           git push -q -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" dati
