@@ -97,6 +97,9 @@ ZONE = [
     ("asia", "Asia e Oceania", ricerca("Cina OR Giappone OR India OR Corea OR Taiwan OR Indonesia OR Australia OR Pakistan")),
     ("medio-oriente", "Medio Oriente", ricerca("Israele OR Gaza OR Iran OR Libano OR Siria OR \"Arabia Saudita\" OR Iraq OR Yemen")),
     ("africa", "Africa", ricerca("Africa OR Egitto OR Nigeria OR Sudafrica OR Libia OR Sudan OR Etiopia OR Congo")),
+    # argomenti: sezioni ufficiali di Google News
+    ("scienza", "Scienza", GN + "/headlines/section/topic/SCIENCE?" + urllib.parse.urlencode(PARAMETRI)),
+    ("tecnologia", "Tecnologia", GN + "/headlines/section/topic/TECHNOLOGY?" + urllib.parse.urlencode(PARAMETRI)),
 ]
 
 
