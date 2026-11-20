@@ -414,3 +414,18 @@ svg.icona { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-
 /* con pioggia, temporale o nebbia il sole non si vede */
 .cielo[data-tempo="pioggia"] .astro, .cielo[data-tempo="temporale"] .astro, .cielo[data-tempo="nebbia"] .astro { display: none; }
 .riga-lista .muted { display: block; font-size: .8rem; line-height: 1.3; }
+
+/* ===== I MIEI TITOLI (tabella del sito) ===== */
+.tabella-titoli td { vertical-align: middle; }
+.tabella-titoli .riga-gruppo th {
+  color: var(--muted); font-size: .875rem; font-weight: 500; text-align: left;
+  padding: 22px 0 8px; border-bottom: 1px solid var(--linea);
+}
+.tabella-titoli tbody .riga-gruppo:first-child th { padding-top: 6px; }
+.riga-titolo { cursor: pointer; }
+.riga-titolo.scelto td { background: var(--schiuma); }
+.riga-titolo.scelto td:first-child { box-shadow: inset 3px 0 0 var(--corallo); padding-left: 12px; }
+.riga-titolo:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+.titolo-codice { display: block; color: var(--muted); font-size: .8rem; }
+.unita { color: var(--muted); font-size: .8em; }
+.tv-grafico { margin-top: 0; }

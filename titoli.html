@@ -45,17 +45,31 @@
     <header class="pagina-testa">
       <div>
         <h1>I miei titoli</h1>
-        <p>Le azioni, gli ETF e le crypto che segui. Per azioni ed ETF i prezzi sono quelli di chiusura (la piccola E accanto al prezzo); le crypto sono in tempo reale.</p>
+        <p>Le azioni, gli ETF e le crypto che segui. Tocca un titolo per vederne il grafico.</p>
       </div>
       
     </header>
     <div class="due-colonne">
       <section class="blocco">
-        <div class="tv-box tv-titoli" id="tv-titoli"></div>
+        <div id="titoli-tabella" class="tabella-scroll">
+          <table class="tabella tabella-titoli">
+            <thead>
+              <tr>
+                <th scope="col">Titolo</th>
+                <th class="destra" scope="col">Prezzo</th>
+                <th class="destra" scope="col">Oggi</th>
+                <th class="destra nascondi-mobile" scope="col">3 mesi</th>
+              </tr>
+            </thead>
+            <tbody id="titoli-corpo">
+              <tr><td colspan="4"><div class="scheletro h-righe"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p id="titoli-nota" class="nota muted piccolo"></p>
       </section>
       <section class="blocco">
         <div class="blocco-testa"><h2>Grafico</h2></div>
-        <div id="chip-titoli" class="chips" role="group" aria-label="Titolo da mostrare"></div>
         <div class="tv-box tv-grafico tv-grafico-grande" id="tv-grafico"></div>
       </section>
     </div>

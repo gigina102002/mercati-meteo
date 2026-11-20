@@ -271,22 +271,24 @@ function converti() {
 // =========================================================
 // I MIEI TITOLI E INDICI (widget gratuiti di TradingView)
 // Per aggiungere o togliere un titolo basta modificare queste liste.
-// Formato simbolo: "BORSA:CODICE" (es. MIL = Borsa di Milano, BINANCE = exchange crypto)
+// s = simbolo TradingView ("BORSA:CODICE", es. MIL = Borsa di Milano), usato per il grafico
+// y = simbolo Yahoo Finance (va aggiunto anche in strumenti/aggiorna-dati.py)
+// b = coppia Binance, per le crypto in tempo reale
 // =========================================================
 const I_MIEI_TITOLI = [
   { gruppo: "Azioni Italia", simboli: [
-    { s: "MIL:ENEL", d: "Enel" },
-    { s: "MIL:ISP", d: "Intesa Sanpaolo" },
-    { s: "MIL:HER", d: "Hera" }
+    { s: "MIL:ENEL", d: "Enel", y: "ENEL.MI" },
+    { s: "MIL:ISP", d: "Intesa Sanpaolo", y: "ISP.MI" },
+    { s: "MIL:HER", d: "Hera", y: "HER.MI" }
   ]},
   { gruppo: "ETF", simboli: [
-    { s: "XETR:VWCE", d: "Vanguard FTSE All-World" } // quotazione Xetra (Francoforte); alternativa: "BER:VWCE"
+    { s: "XETR:VWCE", d: "Vanguard FTSE All-World", y: "VWCE.DE" } // quotazione Xetra (Francoforte); alternativa: "BER:VWCE"
   ]},
   { gruppo: "Crypto", simboli: [
-    { s: "BINANCE:BTCUSDT", d: "Bitcoin / Tether" },
-    { s: "BINANCE:BTCUSDC", d: "Bitcoin / USD Coin" },
-    { s: "BINANCE:ETHBTC", d: "Ethereum / Bitcoin" },
-    { s: "BINANCE:XLMUSDT", d: "Stellar / Tether" }
+    { s: "BINANCE:BTCUSDT", d: "Bitcoin / Tether", b: "BTCUSDT", y: "BTC-USD", u: "USDT" },
+    { s: "BINANCE:BTCUSDC", d: "Bitcoin / USD Coin", b: "BTCUSDC", y: "BTC-USD", u: "USDC" },
+    { s: "BINANCE:ETHBTC", d: "Ethereum / Bitcoin", b: "ETHBTC", y: "ETH-BTC", u: "BTC" },
+    { s: "BINANCE:XLMUSDT", d: "Stellar / Tether", b: "XLMUSDT", y: "XLM-USD", u: "USDT" }
   ]}
 ];
 
@@ -404,16 +406,123 @@ function disegnaWidget() {
   disegnaGrafico();
 }
 
-// Pulsanti per scegliere il titolo da vedere nel grafico
-$("chip-titoli").innerHTML = I_MIEI_TITOLI.flatMap(g => g.simboli).map(x =>
-  `<button type="button" class="chip chip-simbolo" data-s="${esc(x.s)}">${esc(x.s.split(":")[1])}</button>`).join("");
-$("chip-titoli").addEventListener("click", e => {
-  const b = e.target.closest(".chip-simbolo");
-  if (!b) return;
-  simboloGrafico = b.dataset.s;
+// =========================================================
+// PREZZI DEI MIEI TITOLI, con la grafica del sito
+// Borsa: file aggiornato ogni 20 minuti da GitHub Actions (prezzi Yahoo, circa 15 minuti di ritardo)
+// Crypto: Binance in tempo reale. Se i dati mancano, si torna ai riquadri TradingView.
+// =========================================================
+const URL_DATI = "https://raw.githubusercontent.com/gigina102002/mercati-meteo/dati/titoli.json";
+const INDICI_HOME = ["FTSEMIB.MI", "^STOXX50E", "^GDAXI", "^GSPC", "^NDX", "^N225"];
+const VALUTE_SIMBOLO = { EUR: "€", USD: "$", GBP: "£", JPY: "¥" };
+
+function fmtPrezzo(v, unita) {
+  if (v == null) return "—";
+  const dec = v < 0.1 ? 5 : v < 10 ? 3 : 2;
+  const n = v.toLocaleString("it-IT", { minimumFractionDigits: dec, maximumFractionDigits: dec, useGrouping: "always" });
+  if (!unita) return n;
+  return VALUTE_SIMBOLO[unita] ? `${n} ${VALUTE_SIMBOLO[unita]}` : `${n} <span class="unita">${esc(unita)}</span>`;
+}
+const fmtVar = v => v == null ? "" : (v > 0 ? "+" : "") + v.toLocaleString("it-IT", { maximumFractionDigits: Math.abs(v) < 1 ? 4 : 2 });
+
+async function leggiBinance() {
+  const coppie = I_MIEI_TITOLI.flatMap(g => g.simboli).filter(x => x.b).map(x => x.b);
+  if (!coppie.length) return {};
+  const r = await fetch("https://api.binance.com/api/v3/ticker/24hr?symbols=" + encodeURIComponent(JSON.stringify(coppie)));
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  const oggi = await r.json();
+  const storici = await Promise.all(coppie.map(c =>
+    fetch(`https://api.binance.com/api/v3/klines?symbol=${c}&interval=1d&limit=90`).then(x => x.ok ? x.json() : []).catch(() => [])));
+  const out = {};
+  oggi.forEach(t => {
+    const i = coppie.indexOf(t.symbol);
+    out[t.symbol] = {
+      prezzo: +t.lastPrice, var: +t.priceChange, var_pct: +t.priceChangePercent,
+      ora: Math.floor(Date.now() / 1000), storico: (storici[i] || []).map(k => +k[4]), tempoReale: true
+    };
+  });
+  return out;
+}
+
+const statoTitoli = { dati: null, binance: {} };
+
+async function caricaTitoli() {
+  const [dati, binance] = await Promise.all([
+    fetch(URL_DATI + "?v=" + Math.floor(Date.now() / 60000)).then(r => r.ok ? r.json() : null).catch(() => null),
+    leggiBinance().catch(e => { console.warn("Binance:", e); return {}; })
+  ]);
+  if (dati) statoTitoli.dati = dati;
+  statoTitoli.binance = Object.keys(binance).length ? binance : statoTitoli.binance;
+  if (!statoTitoli.dati) return usaRiserva();   // senza i prezzi di borsa usiamo TradingView
+  disegnaTitoli();
+}
+
+// I dati di un titolo: prima Binance (crypto), poi il file di GitHub
+function datiTitolo(x) {
+  if (x.b && statoTitoli.binance[x.b]) return { ...statoTitoli.binance[x.b], valuta: x.u };
+  const d = statoTitoli.dati?.titoli?.[x.y];
+  return d ? { ...d, valuta: x.u || d.valuta } : null;
+}
+
+function disegnaTitoli() {
+  const gruppi = I_MIEI_TITOLI.map(g => ({ ...g, righe: g.simboli.map(x => ({ x, d: datiTitolo(x) })) }));
+  const oraAgg = statoTitoli.dati?.aggiornato
+    ? new Date(statoTitoli.dati.aggiornato).toLocaleString("it-IT", { weekday: "short", hour: "2-digit", minute: "2-digit" }) : null;
+
+  // Home: elenco breve
+  $("titoli-lista").innerHTML = gruppi.flatMap(g => g.righe).map(({ x, d }) => `
+    <li class="riga-lista">
+      <span><span class="moneta-nome">${esc(x.d)}</span></span>
+      <span class="valore-lista">${d ? fmtPrezzo(d.prezzo, d.valuta) : "—"}</span>
+      ${badgeVariazione(d?.var_pct)}
+    </li>`).join("");
+
+  const indici = statoTitoli.dati?.indici || {};
+  $("borse-lista").innerHTML = INDICI_HOME.filter(s => indici[s]).map(s => {
+    const d = indici[s];
+    return `<li class="riga-lista"><span class="moneta-nome">${esc(d.nome)}</span>
+      <span class="valore-lista">${fmtPrezzo(d.prezzo)}</span>${badgeVariazione(d.var_pct)}</li>`;
+  }).join("") || `<li class="muted piccolo">Indici non ancora disponibili.</li>`;
+  $("titoli-agg").textContent = oraAgg ? `Borsa aggiornata ${oraAgg}, crypto in tempo reale.` : "";
+
+  // Pagina "I miei titoli": tabella completa
+  $("titoli-corpo").innerHTML = gruppi.map(g => `
+    <tr class="riga-gruppo"><th colspan="4" scope="rowgroup">${esc(g.gruppo)}</th></tr>` + g.righe.map(({ x, d }) => `
+    <tr class="riga-titolo${x.s === simboloGrafico ? " scelto" : ""}" data-s="${esc(x.s)}" tabindex="0" aria-label="Mostra il grafico di ${esc(x.d)}">
+      <td><span class="moneta-nome">${esc(x.d)}</span><span class="titolo-codice">${esc(x.s.split(":")[1])}${d?.tempoReale ? " · tempo reale" : ""}</span></td>
+      <td class="destra"><strong>${d ? fmtPrezzo(d.prezzo, d.valuta) : "—"}</strong></td>
+      <td class="destra"><span class="${(d?.var ?? 0) >= 0 ? "su" : "giu"}">${d ? fmtVar(d.var) : ""}</span><br>${badgeVariazione(d?.var_pct)}</td>
+      <td class="nascondi-mobile"><div class="sparkline-cella">${d?.storico?.length ? sparkline(d.storico, 76, 30) : ""}</div></td>
+    </tr>`).join("")).join("");
+  $("titoli-nota").textContent = oraAgg
+    ? `Azioni ed ETF: prezzi con circa 15 minuti di ritardo, aggiornati ogni 20 minuti nei giorni di borsa (ultimo aggiornamento ${oraAgg}). Crypto: in tempo reale da Binance. Il grafico a destra mostra il titolo che tocchi.`
+    : "Crypto in tempo reale da Binance. I prezzi di borsa non sono ancora disponibili.";
+}
+
+function scegliTitolo(riga) {
+  if (!riga) return;
+  simboloGrafico = riga.dataset.s;
   memoria.scrivi("grafico", simboloGrafico);
+  document.querySelectorAll(".riga-titolo").forEach(r => r.classList.toggle("scelto", r === riga));
   disegnaGrafico();
+}
+$("titoli-corpo").addEventListener("click", e => scegliTitolo(e.target.closest(".riga-titolo")));
+$("titoli-corpo").addEventListener("keydown", e => {
+  if (e.key === "Enter" || e.key === " ") { e.preventDefault(); scegliTitolo(e.target.closest(".riga-titolo")); }
 });
+
+// Se i dati non arrivano, mostriamo i riquadri di TradingView al loro posto
+function usaRiserva() {
+  [["titoli-lista", "tv-titoli"], ["borse-lista", "tv-indici-home"], ["titoli-tabella", "tv-titoli"]].forEach(([id, idWidget]) => {
+    if (!esiste(id) || esiste(idWidget)) return;
+    const box = document.createElement("div");
+    box.id = idWidget;
+    box.className = "tv-box " + idWidget;
+    $(id).replaceWith(box);
+  });
+  $("titoli-nota").textContent = "";
+  $("titoli-agg").textContent = "";
+  disegnaWidget();
+}
 
 // =========================================================
 // METEO (Open-Meteo: previsioni + qualità dell'aria)
@@ -836,6 +945,10 @@ if (esiste("meteo-corpo")) {
 if (esiste("mappa-esterna")) {
   const primo = document.querySelector(".chip-luogo");
   mostraMappaEsterna(primo.dataset.lat, primo.dataset.lon, primo.dataset.zoom);
+}
+if (esiste("titoli-lista") || esiste("titoli-corpo")) {
+  caricaTitoli();
+  setInterval(caricaTitoli, 60000);                  // ogni minuto (le crypto cambiano spesso)
 }
 if (esiste("cielo") && !esiste("meteo-corpo")) {
   caricaMeteoMini(cittaIniziale);

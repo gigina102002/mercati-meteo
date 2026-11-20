@@ -102,11 +102,12 @@ home = '''    <div class="home-griglia">
       <div class="blocco colonna-sx">
         <section>
           ''' + blocco_testa("I miei titoli", "Grafici", "titoli.html") + '''
-          <div class="tv-box tv-titoli" id="tv-titoli"></div>
+          <ol id="titoli-lista" class="lista"><li class="scheletro h-lista"></li></ol>
         </section>
         <section>
           ''' + blocco_testa("Borse", "Tutti gli indici", "indici.html") + '''
-          <div class="tv-box tv-indici-home" id="tv-indici-home"></div>
+          <ol id="borse-lista" class="lista"><li class="scheletro h-lista"></li></ol>
+          <p id="titoli-agg" class="nota muted piccolo"></p>
         </section>
       </div>
       <section class="blocco">
@@ -118,14 +119,28 @@ home = '''    <div class="home-griglia">
     </div>'''
 
 # ---------------- I MIEI TITOLI ----------------
-titoli = testa("I miei titoli", "Le azioni, gli ETF e le crypto che segui. Per azioni ed ETF i prezzi sono quelli di chiusura (la piccola E accanto al prezzo); le crypto sono in tempo reale.") + '''
+titoli = testa("I miei titoli", "Le azioni, gli ETF e le crypto che segui. Tocca un titolo per vederne il grafico.") + '''
     <div class="due-colonne">
       <section class="blocco">
-        <div class="tv-box tv-titoli" id="tv-titoli"></div>
+        <div id="titoli-tabella" class="tabella-scroll">
+          <table class="tabella tabella-titoli">
+            <thead>
+              <tr>
+                <th scope="col">Titolo</th>
+                <th class="destra" scope="col">Prezzo</th>
+                <th class="destra" scope="col">Oggi</th>
+                <th class="destra nascondi-mobile" scope="col">3 mesi</th>
+              </tr>
+            </thead>
+            <tbody id="titoli-corpo">
+              <tr><td colspan="4"><div class="scheletro h-righe"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p id="titoli-nota" class="nota muted piccolo"></p>
       </section>
       <section class="blocco">
         ''' + blocco_testa("Grafico") + '''
-        <div id="chip-titoli" class="chips" role="group" aria-label="Titolo da mostrare"></div>
         <div class="tv-box tv-grafico tv-grafico-grande" id="tv-grafico"></div>
       </section>
     </div>'''

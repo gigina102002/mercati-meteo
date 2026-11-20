@@ -45,8 +45,13 @@ def leggi(simbolo, nome):
     oggi = [round(v, 6) for v in oggi_df["Close"].dropna().tolist()] if not oggi_df.empty else []
     info = t.fast_info
     prezzo = numero(getattr(info, "last_price", None)) or storico[-1]
-    prec = numero(getattr(info, "previous_close", None)) or (storico[-2] if len(storico) > 1 else None)
     ultimo = (oggi_df if not oggi_df.empty else storico_df).index[-1]
+    # chiusura precedente: dallo storico giornaliero (più affidabile di fast_info)
+    chiusure_df = storico_df["Close"].dropna()
+    if chiusure_df.index[-1].date() == ultimo.date():
+        prec = float(chiusure_df.iloc[-2]) if len(chiusure_df) > 1 else None
+    else:
+        prec = float(chiusure_df.iloc[-1])
     return {
         "simbolo": simbolo, "nome": nome, "valuta": getattr(info, "currency", None),
         "prezzo": prezzo, "chiusura_prec": prec,
