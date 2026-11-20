@@ -1,0 +1,411 @@
+/* =========================================================
+   Mercati e Meteo — stile "Mediterraneo"
+   Un solo elemento forte (il cielo in alto), il resto sobrio.
+   ========================================================= */
+
+/* ===== COLORI ===== */
+:root {
+  --sfondo: #ffffff;
+  --testo: #0e2238;        /* Fondale */
+  --mare: #0b4f8a;         /* titoli e link */
+  --schiuma: #f1f6fa;      /* zone raccolte */
+  --linea: #e1e9f0;
+  --muted: #5e6f82;
+  --corallo: #e8674a;      /* solo per "sei qui" e "adesso" */
+  --su: #1e8c5a;
+  --giu: #c2362b;
+  --focus: #e8674a;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --sfondo: #081526;
+    --testo: #dce7f2;
+    --mare: #8cc3f2;
+    --schiuma: #0f2036;
+    --linea: rgba(255, 255, 255, .09);
+    --muted: #8ea3b8;
+    --corallo: #f0866a;
+    --su: #4cc38a;
+    --giu: #f2776f;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --sfondo: #081526;
+  --testo: #dce7f2;
+  --mare: #8cc3f2;
+  --schiuma: #0f2036;
+  --linea: rgba(255, 255, 255, .09);
+  --muted: #8ea3b8;
+  --corallo: #f0866a;
+  --su: #4cc38a;
+  --giu: #f2776f;
+  color-scheme: dark;
+}
+
+/* ===== BASE ===== */
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: "Outfit", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  font-weight: 400;
+  color: var(--testo);
+  background: var(--sfondo);
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3 { margin: 0; font-weight: 500; letter-spacing: -0.01em; line-height: 1.15; }
+h1 { font-size: 2.6rem; color: var(--mare); letter-spacing: -0.025em; }
+h2 { font-size: 1.3rem; color: var(--mare); }
+p { margin: 0; }
+a { color: var(--mare); text-decoration: none; }
+a:hover { text-decoration: underline; text-underline-offset: 3px; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 4px; }
+.contenitore { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+.muted { color: var(--muted); }
+.piccolo { font-size: .875rem; }
+.su { color: var(--su); }
+.giu { color: var(--giu); }
+svg.icona { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; display: block; }
+
+/* ===== BARRA SUPERIORE ===== */
+.topbar { position: sticky; top: 0; z-index: 10; background: var(--sfondo); border-bottom: 1px solid var(--linea); }
+.topbar-interno { display: flex; align-items: center; gap: 32px; height: 66px; }
+.logo { display: flex; align-items: center; gap: 10px; color: var(--testo); font-weight: 600; font-size: 1.05rem; flex: none; }
+.logo:hover { text-decoration: none; }
+.menu { display: flex; gap: 22px; }
+.menu a { position: relative; color: var(--muted); font-weight: 400; font-size: .95rem; padding: 21px 0; white-space: nowrap; }
+.menu a:hover { color: var(--testo); text-decoration: none; }
+.menu a.attivo { color: var(--testo); font-weight: 500; }
+.menu a.attivo::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--corallo); border-radius: 2px; }
+.topbar-destra { margin-left: auto; display: flex; align-items: center; gap: 14px; flex: none; }
+.orologio { color: var(--muted); font-size: .875rem; font-variant-numeric: tabular-nums; }
+.btn-icona {
+  display: inline-grid; place-items: center; width: 38px; height: 38px; flex: none;
+  border-radius: 50%; border: 1px solid var(--linea); background: var(--sfondo); color: var(--testo); cursor: pointer;
+}
+.btn-icona:hover { border-color: var(--muted); }
+
+/* ===== TICKER (TradingView) ===== */
+.ticker { min-height: 46px; border-bottom: 1px solid var(--linea); overflow: hidden; }
+
+/* ===== IL CIELO ===== */
+.cielo {
+  position: relative; overflow: hidden; color: #fff;
+  min-height: 460px; display: flex; flex-direction: column;
+  background: linear-gradient(180deg, #1f6fc5 0%, #5aa7e6 55%, #a8d8f4 100%);
+}
+.cielo[data-fase="alba"] { background: linear-gradient(180deg, #3d5c9e 0%, #c98ba0 58%, #f6c08a 100%); }
+.cielo[data-fase="tramonto"] { background: linear-gradient(180deg, #27407e 0%, #b9677e 58%, #f09464 100%); }
+.cielo[data-fase="notte"] { background: linear-gradient(180deg, #06172e 0%, #12305a 62%, #24497c 100%); }
+/* il tempo vela il cielo */
+.cielo::before { content: ""; position: absolute; inset: 0; pointer-events: none; transition: background .8s; }
+.cielo[data-tempo="nuvoloso"]::before { background: rgba(132, 146, 165, .42); }
+.cielo[data-tempo="nebbia"]::before { background: rgba(186, 196, 208, .55); }
+.cielo[data-tempo="pioggia"]::before { background: rgba(52, 68, 92, .55); }
+.cielo[data-tempo="temporale"]::before { background: rgba(36, 32, 66, .62); }
+.cielo[data-tempo="neve"]::before { background: rgba(196, 210, 228, .45); }
+
+.cielo-arco { position: absolute; inset: 0 0 70px; pointer-events: none; }
+.cielo-arco svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.cielo-arco path { fill: none; stroke: rgba(255, 255, 255, .35); stroke-width: 1.2; stroke-dasharray: 2 7; }
+.astro {
+  position: absolute; left: var(--astro-x, 50%); top: var(--astro-y, 30%);
+  width: 76px; height: 76px; border-radius: 50%; transform: translate(-50%, -50%);
+  background: radial-gradient(circle at 40% 40%, #fffbe8, #ffd36e 70%);
+  box-shadow: 0 0 60px 22px rgba(255, 214, 120, .45);
+  animation: sorgere 1.6s cubic-bezier(.2, .7, .2, 1) both;
+}
+.cielo[data-fase="alba"] .astro, .cielo[data-fase="tramonto"] .astro {
+  background: radial-gradient(circle at 40% 40%, #fff1dc, #ffad72 72%);
+  box-shadow: 0 0 70px 26px rgba(255, 160, 100, .45);
+}
+.cielo[data-fase="notte"] .astro {
+  width: 50px; height: 50px;
+  background: radial-gradient(circle at 38% 38%, #ffffff, #dfe7f4 70%);
+  box-shadow: 0 0 40px 10px rgba(220, 230, 255, .25), inset -9px -5px 0 0 rgba(150, 165, 195, .35);
+}
+.cielo:not([data-tempo="sereno"]) .astro { opacity: .55; }
+@keyframes sorgere { from { opacity: 0; translate: 0 50px; } }
+
+.cielo-contenuto { position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: 28px; width: 100%; padding-top: 48px; padding-bottom: 120px; }
+.cielo-testo { max-width: 640px; text-shadow: 0 1px 12px rgba(0, 20, 50, .18); }
+.cielo-sotto { font-size: 1rem; opacity: .85; }
+.cielo-sotto:first-letter { text-transform: uppercase; }
+.cielo-titolo { color: #fff; font-size: 3.6rem; font-weight: 400; letter-spacing: -0.03em; margin: 4px 0 10px; }
+.cielo-temp { font-size: 6.5rem; font-weight: 200; line-height: 1; letter-spacing: -0.05em; margin: 10px 0 8px; font-variant-numeric: tabular-nums; }
+.cielo-frase { font-size: 1.2rem; font-weight: 300; line-height: 1.5; max-width: 34em; }
+.cielo-frase strong { font-weight: 500; }
+.cielo-giorni { list-style: none; margin: 26px 0 0; padding: 0; display: flex; gap: 30px; flex-wrap: wrap; }
+.cielo-giorni li { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; font-size: .95rem; font-weight: 300; font-variant-numeric: tabular-nums; }
+.cielo-giorni svg.icona { width: 24px; height: 24px; stroke-width: 1.5; }
+.cielo-giorni strong { font-weight: 500; }
+.cielo-giorno-nome { text-transform: capitalize; opacity: .85; }
+.cielo-link {
+  display: inline-block; margin-top: 24px; color: #fff; font: inherit; font-size: 1rem; font-weight: 500;
+  background: none; border: 0; padding: 0; cursor: pointer;
+  text-decoration: underline; text-decoration-color: rgba(255, 255, 255, .5); text-underline-offset: 5px;
+}
+.cielo-link:hover { text-decoration-color: #fff; }
+
+.onda { position: absolute; left: 0; right: 0; bottom: -1px; width: 100%; height: 90px; z-index: 1; }
+.onda-lontana { fill: var(--sfondo); opacity: .35; }
+.onda-vicina { fill: var(--sfondo); }
+
+/* Ricerca città sul cielo (pagina Meteo) */
+.cielo-strumenti { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-bottom: auto; }
+.ricerca-wrap { position: relative; flex: 0 1 380px; min-width: 240px; }
+.ricerca {
+  display: flex; align-items: center; gap: 8px; border-radius: 999px; padding: 4px 4px 4px 16px;
+  background: rgba(255, 255, 255, .2); border: 1px solid rgba(255, 255, 255, .35); backdrop-filter: blur(8px);
+}
+.ricerca:focus-within { background: rgba(255, 255, 255, .3); border-color: #fff; }
+.ricerca-icona { color: #fff; opacity: .85; }
+.ricerca input { flex: 1; border: 0; outline: 0; background: transparent; color: #fff; font: inherit; padding: 6px 0; min-width: 0; }
+.ricerca input::placeholder { color: rgba(255, 255, 255, .8); }
+.ricerca .btn-icona { width: 34px; height: 34px; background: transparent; border-color: transparent; color: #fff; }
+.suggerimenti {
+  position: absolute; top: calc(100% + 8px); left: 0; right: 0; z-index: 5; padding: 6px;
+  background: var(--sfondo); color: var(--testo); border-radius: 14px; box-shadow: 0 16px 40px -12px rgba(0, 20, 50, .35); text-shadow: none;
+}
+.suggerimenti button {
+  display: flex; flex-direction: column; align-items: flex-start; width: 100%; padding: 8px 12px;
+  border: 0; border-radius: 10px; background: transparent; color: var(--testo); font: inherit; text-align: left; cursor: pointer;
+}
+.suggerimenti button:hover, .suggerimenti button:focus-visible { background: var(--schiuma); }
+.suggerimenti span { font-size: .85rem; color: var(--muted); }
+.suggerimenti .vuoto { padding: 10px 12px; }
+
+/* ===== PULSANTI A PILLOLA (chip) ===== */
+.chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.chip {
+  font: inherit; font-size: .875rem; color: var(--testo); background: transparent;
+  border: 1px solid var(--linea); border-radius: 999px; padding: 5px 14px; cursor: pointer;
+}
+.chip:hover { border-color: var(--muted); }
+.chip.attivo { background: var(--mare); border-color: var(--mare); color: var(--sfondo); }
+.chips-cielo .chip { color: #fff; border-color: rgba(255, 255, 255, .4); }
+.chips-cielo .chip:hover { border-color: #fff; }
+.chips-cielo .chip.attivo { background: #fff; border-color: #fff; color: #0b4f8a; }
+.etichetta-chips { margin-right: 4px; }
+
+/* ===== INTESTAZIONI E BLOCCHI ===== */
+.pagina-testa { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; flex-wrap: wrap; padding: 56px 0 32px; }
+.pagina-testa p { margin-top: 12px; max-width: 38em; color: var(--muted); font-size: 1.1rem; font-weight: 300; }
+.sezione { margin-top: 64px; }
+.blocco { min-width: 0; }
+.blocco-testa { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; }
+.blocco-testa .link, .link { font-size: .95rem; }
+.nota { margin-top: 14px; }
+.aggiornato { color: var(--muted); font-size: .95rem; }
+
+/* griglie con righe verticali sottili al posto delle schede */
+.home-griglia, .tre-colonne, .due-colonne { display: grid; gap: 0; }
+.home-griglia { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 1fr); margin-top: 8px; }
+.tre-colonne { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.due-colonne { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); }
+.due-colonne-pari { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); }
+.home-griglia > .blocco, .tre-colonne > .blocco, .due-colonne > .blocco { padding: 0 32px; }
+.home-griglia > .blocco:first-child, .tre-colonne > .blocco:first-child, .due-colonne > .blocco:first-child { padding-left: 0; }
+.home-griglia > .blocco:last-child, .tre-colonne > .blocco:last-child, .due-colonne > .blocco:last-child { padding-right: 0; }
+.home-griglia > .blocco + .blocco, .tre-colonne > .blocco + .blocco, .due-colonne > .blocco + .blocco { border-left: 1px solid var(--linea); }
+
+/* elenchi brevi (Home) */
+.lista { list-style: none; margin: 0 0 36px; padding: 0; }
+.riga-lista {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto 76px; align-items: center; gap: 12px;
+  padding: 10px 0; border-bottom: 1px solid var(--linea); font-variant-numeric: tabular-nums;
+}
+.riga-lista:last-child { border-bottom: 0; }
+.riga-lista .variazione { justify-self: end; }
+.valore-lista { font-weight: 500; }
+.h-lista { height: 200px; list-style: none; }
+
+/* ===== WIDGET TRADINGVIEW ===== */
+.tv-box { position: relative; }
+.tv-box .tradingview-widget-container, .tv-box .tradingview-widget-container__widget { height: 100%; width: 100%; }
+.tv-titoli { height: 540px; }
+.tv-indici-home { height: 540px; }
+.tv-grafico { height: 440px; margin-top: 16px; border-radius: 14px; overflow: hidden; }
+.tv-grafico-grande { height: 560px; }
+.tv-indici { height: 480px; }
+
+/* ===== TABELLE ===== */
+.tabella-scroll { overflow-x: auto; }
+.tabella { width: 100%; border-collapse: collapse; font-size: .95rem; font-variant-numeric: tabular-nums; }
+.tabella th { text-align: left; font-weight: 400; color: var(--muted); font-size: .875rem; padding: 0 12px 10px; white-space: nowrap; border-bottom: 1px solid var(--linea); }
+.tabella td { padding: 14px 12px; white-space: nowrap; border-bottom: 1px solid var(--linea); }
+.tabella th:first-child, .tabella td:first-child { padding-left: 0; }
+.tabella th:last-child, .tabella td:last-child { padding-right: 0; }
+.tabella tbody tr:hover td { background: var(--schiuma); }
+.tabella .destra { text-align: right; }
+.tabella .col-num { width: 32px; color: var(--muted); }
+.tabella strong { font-weight: 500; }
+.moneta { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.moneta img { width: 26px; height: 26px; border-radius: 50%; flex: none; }
+.moneta-nome { font-weight: 500; }
+.moneta-simbolo { color: var(--muted); font-size: .8rem; text-transform: uppercase; margin-left: 6px; }
+.sparkline-cella { display: flex; justify-content: flex-end; }
+.sparkline { display: block; overflow: visible; }
+.variazione { font-weight: 500; font-size: .9rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.variazione.neutra { color: var(--muted); }
+
+/* ===== METEO ===== */
+.meteo-corpo { padding-top: 24px; }
+.meteo-griglia { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.7fr); gap: 64px; }
+.meteo-griglia h2 { margin-bottom: 16px; }
+.meteo-griglia h2 ~ h2 { margin-top: 40px; }
+.dati { margin: 0; }
+.dato { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 11px 0; border-bottom: 1px solid var(--linea); }
+.dato:first-child { border-top: 1px solid var(--linea); }
+.dato dt { display: flex; align-items: center; gap: 8px; color: var(--muted); }
+.dato dt svg { width: 16px; height: 16px; }
+.dato dd { margin: 0; text-align: right; font-weight: 500; font-variant-numeric: tabular-nums; }
+.dato-extra { display: block; font-weight: 400; font-size: .82rem; color: var(--muted); }
+.freccia-vento { display: inline-block; vertical-align: -2px; color: var(--mare); }
+.freccia-vento svg { width: 14px; height: 14px; fill: currentColor; }
+.livello { font-size: .78rem; font-weight: 500; margin-left: 4px; }
+.liv-1 { color: #1e8c5a; }
+.liv-2 { color: #5c8a12; }
+.liv-3 { color: #b07a06; }
+.liv-4 { color: #cc5a14; }
+.liv-5 { color: #c2362b; }
+.liv-6 { color: #8a3cc2; }
+
+.orario-scroll { overflow-x: auto; }
+.grafico-orario { display: block; width: 100%; height: auto; min-width: 640px; }
+.grafico-orario .g-temp { font-size: 12px; font-weight: 500; fill: var(--testo); font-family: inherit; }
+.grafico-orario .g-ora { font-size: 11px; fill: var(--muted); font-family: inherit; }
+.grafico-orario .g-pioggia { font-size: 10px; fill: var(--mare); font-family: inherit; }
+.legenda { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+.leg { display: inline-block; width: 14px; height: 3px; border-radius: 2px; margin-left: 12px; }
+.leg:first-child { margin-left: 0; }
+.leg-temp { background: #f59e0b; }
+.leg-pioggia { background: var(--mare); opacity: .4; height: 10px; width: 10px; }
+
+.giorni { list-style: none; margin: 0; padding: 0; }
+.giorno {
+  display: grid; grid-template-columns: 76px 26px minmax(0, 1fr) 58px 34px minmax(70px, 150px) 34px;
+  align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--linea); font-variant-numeric: tabular-nums;
+}
+.giorno:first-child { border-top: 1px solid var(--linea); }
+.giorno-nome { text-transform: capitalize; }
+.giorno-icona svg { width: 22px; height: 22px; }
+.giorno-desc { font-size: .9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.giorno-pioggia { display: flex; align-items: center; gap: 4px; color: var(--mare); font-size: .875rem; }
+.giorno-pioggia svg { width: 13px; height: 13px; }
+.giorno-min { text-align: right; }
+.giorno-max { font-weight: 500; }
+.barra-temp { position: relative; height: 4px; border-radius: 2px; background: var(--linea); }
+.barra-temp span { position: absolute; top: 0; bottom: 0; border-radius: 2px; background: linear-gradient(90deg, #6aa9e8, #f2a65a); }
+.c-sole { color: #e89b18; }
+.c-nuvola { color: #8796ab; }
+.c-pioggia { color: #2f73c9; }
+.c-neve { color: #5fb0dc; }
+.c-temporale { color: #7458cc; }
+.c-luna { color: #7d8bd0; }
+
+.mappa { display: block; width: 100%; height: 500px; border: 0; border-radius: 16px; background: var(--schiuma); }
+.mappa-alta { height: 660px; }
+
+/* Carte dei modelli (Meteociel) */
+.modelli { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 0; border-top: 1px solid var(--linea); padding-top: 40px; }
+.modello-principale { padding-right: 48px; }
+.modello-principale p { margin: 12px 0 24px; max-width: 34em; color: var(--muted); font-weight: 300; font-size: 1.05rem; }
+.modelli-altri { list-style: none; margin: 0; padding: 0 0 0 48px; border-left: 1px solid var(--linea); }
+.modelli-altri a { display: flex; flex-direction: column; padding: 12px 0; border-bottom: 1px solid var(--linea); color: var(--testo); }
+.modelli-altri li:last-child a { border-bottom: 0; }
+.modelli-altri a:hover { text-decoration: none; }
+.modelli-altri a:hover strong { color: var(--mare); text-decoration: underline; text-underline-offset: 3px; }
+.modelli-altri strong { font-weight: 500; }
+.modelli-altri span { color: var(--muted); font-size: .92rem; }
+
+.pulsante {
+  display: inline-flex; align-items: center; gap: 8px; padding: 11px 22px; border-radius: 999px;
+  background: var(--mare); color: var(--sfondo); font-weight: 500; white-space: nowrap;
+}
+.pulsante:hover { text-decoration: none; filter: brightness(1.1); }
+
+/* ===== CONVERTITORE ===== */
+.convertitore { display: flex; flex-direction: column; gap: 18px; }
+.campo { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 0; }
+.campo span { font-size: .875rem; color: var(--muted); }
+.campo input, .campo select {
+  font: inherit; color: var(--testo); background: var(--sfondo);
+  border: 1px solid var(--linea); border-radius: 12px; padding: 11px 14px; width: 100%;
+}
+.campo input:focus, .campo select:focus { outline: 0; border-color: var(--mare); }
+.conv-riga { display: flex; align-items: flex-end; gap: 10px; }
+.btn-scambia { height: 46px; width: 46px; }
+.conv-risultato { padding: 22px 0 0; border-top: 1px solid var(--linea); }
+.conv-valore { font-size: 2.6rem; font-weight: 300; color: var(--mare); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; word-break: break-word; }
+
+/* ===== CARICAMENTO / ERRORI ===== */
+.scheletro {
+  border-radius: 12px;
+  background: linear-gradient(90deg, var(--schiuma) 25%, var(--linea) 50%, var(--schiuma) 75%);
+  background-size: 200% 100%; animation: luccica 1.4s infinite;
+}
+.h-righe { height: 300px; }
+.h-meteo { height: 420px; }
+@keyframes luccica { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+.errore-box { color: var(--giu); padding: 12px 0; }
+.errore-box button { margin-left: 8px; font: inherit; color: var(--mare); background: none; border: 0; padding: 0; text-decoration: underline; cursor: pointer; }
+
+/* ===== PIÈ DI PAGINA ===== */
+.piede { margin-top: 96px; border-top: 1px solid var(--linea); padding: 32px 0 48px; }
+.piede-interno { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 32px; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1100px) {
+  .orologio { display: none; }
+  .menu { gap: 16px; }
+}
+@media (max-width: 1000px) {
+  .home-griglia, .tre-colonne, .due-colonne, .due-colonne-pari, .meteo-griglia, .modelli { grid-template-columns: minmax(0, 1fr); }
+  .home-griglia > .blocco, .tre-colonne > .blocco, .due-colonne > .blocco { padding: 0; }
+  .home-griglia > .blocco + .blocco, .tre-colonne > .blocco + .blocco, .due-colonne > .blocco + .blocco { border-left: 0; border-top: 1px solid var(--linea); padding-top: 32px; margin-top: 32px; }
+  .meteo-griglia { gap: 40px; }
+  .modello-principale { padding: 0 0 32px; }
+  .modelli-altri { padding: 0; border-left: 0; }
+}
+@media (max-width: 760px) {
+  .contenitore { padding: 0 16px; }
+  body { padding-bottom: 64px; }
+  .topbar-interno { height: 58px; }
+  .menu {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 20; gap: 0;
+    background: var(--sfondo); border-top: 1px solid var(--linea);
+    overflow-x: auto; scrollbar-width: none; padding: 0 8px env(safe-area-inset-bottom);
+  }
+  .menu a { flex: none; padding: 16px 11px; font-size: .9rem; }
+  .menu a.attivo::after { top: -1px; bottom: auto; }
+  h1 { font-size: 2rem; }
+  .pagina-testa { padding: 36px 0 24px; }
+  .cielo { min-height: 400px; }
+  .cielo-contenuto { padding-top: 28px; padding-bottom: 96px; }
+  .cielo-titolo { font-size: 2.6rem; }
+  .cielo-temp { font-size: 5rem; }
+  .cielo-frase { font-size: 1.05rem; }
+  .cielo-giorni { gap: 18px; }
+  .astro { width: 46px; height: 46px; opacity: .7; }
+  .cielo[data-fase="notte"] .astro { width: 36px; height: 36px; }
+  .ricerca-wrap { flex: 1 1 100%; }
+  .giorno { grid-template-columns: 64px 22px 46px 30px minmax(40px, 1fr) 30px; gap: 8px; }
+  .giorno-desc { display: none; }
+  .mappa { height: 380px; }
+  .mappa-alta { height: 66vh; }
+  .nascondi-mobile, .tabella .col-num, .moneta-simbolo { display: none; }
+  .tabella th, .tabella td { padding-left: 6px; padding-right: 6px; }
+  .piede-interno { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+/* con pioggia, temporale o nebbia il sole non si vede */
+.cielo[data-tempo="pioggia"] .astro, .cielo[data-tempo="temporale"] .astro, .cielo[data-tempo="nebbia"] .astro { display: none; }
+.riga-lista .muted { display: block; font-size: .8rem; line-height: 1.3; }
