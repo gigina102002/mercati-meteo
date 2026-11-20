@@ -560,30 +560,47 @@ function rigaNotizia(n, argomento) {
   return `<li class="notizia"><a href="${esc(n.link)}" target="_blank" rel="noopener">${esc(n.titolo)}</a><span class="notizia-meta">${esc(meta)}</span></li>`;
 }
 
+let zonaNotizie = memoria.leggi("zona-notizie") || "mondo";
+let datiNotizie = null;
+
 async function caricaNotizie() {
-  let dati;
-  try { dati = await leggiDati("notizie.json"); } catch (e) { dati = null; }
+  try { datiNotizie = await leggiDati("notizie.json"); } catch (e) { /* teniamo quelle di prima */ }
   const vuoto = `<li class="muted">Le notizie non sono disponibili in questo momento.</li>`;
-  if (!dati) { $("notizie-home").innerHTML = vuoto; $("notizie-argomenti").innerHTML = `<p class="muted">Le notizie non sono disponibili in questo momento.</p>`; return; }
+  const zone = datiNotizie?.zone;
+  if (!zone) { $("notizie-home").innerHTML = vuoto; $("notizie-elenco").innerHTML = vuoto; return; }
 
-  // Home: 6 notizie, al massimo 2 per argomento, dalle più recenti
-  const visti = new Set(), perArgomento = {};
-  const scelte = dati.argomenti.flatMap(a => a.notizie.map(n => ({ n, a: a.nome })))
-    .sort((x, y) => (y.n.data || "").localeCompare(x.n.data || ""))
-    .filter(({ n, a }) => {
-      if (visti.has(n.titolo) || (perArgomento[a] || 0) >= 2) return false;
-      visti.add(n.titolo); perArgomento[a] = (perArgomento[a] || 0) + 1; return true;
-    });
-  $("notizie-home").innerHTML = scelte.slice(0, 6).map(({ n, a }) => rigaNotizia(n, a)).join("") || vuoto;
+  // Home: le prime 6 dal mondo
+  const mondo = zone.find(z => z.chiave === "mondo") || zone[0];
+  $("notizie-home").innerHTML = mondo.notizie.slice(0, 6).map(n => rigaNotizia(n)).join("") || vuoto;
 
-  // Pagina Notizie: una colonna per argomento
-  $("notizie-argomenti").innerHTML = dati.argomenti.map(a => `
-    <section class="blocco">
-      <div class="blocco-testa"><h2>${esc(a.nome)}</h2></div>
-      <ol class="notizie">${a.notizie.map(n => rigaNotizia(n)).join("") || '<li class="muted">Nessuna notizia negli ultimi 3 giorni.</li>'}</ol>
-    </section>`).join("");
-  $("notizie-agg").textContent = "Aggiornate " + tempoFa(dati.aggiornato);
+  // Pagina Notizie: pulsanti delle zone e notizie della zona scelta
+  if (!zone.some(z => z.chiave === zonaNotizie)) zonaNotizie = zone[0].chiave;
+  $("zone-notizie").innerHTML = zone.map(z =>
+    `<button type="button" class="chip chip-zona${z.chiave === zonaNotizie ? " attivo" : ""}" data-zona="${esc(z.chiave)}" aria-pressed="${z.chiave === zonaNotizie}">${esc(z.nome)}</button>`).join("");
+  mostraZona();
+  $("notizie-agg").textContent = "Aggiornate " + tempoFa(datiNotizie.aggiornato);
 }
+
+function mostraZona() {
+  const zona = datiNotizie?.zone.find(z => z.chiave === zonaNotizie);
+  if (!zona) return;
+  $("notizie-zona-titolo").textContent = zona.nome;
+  $("notizie-elenco").innerHTML = zona.notizie.map(n => rigaNotizia(n, n.argomento)).join("")
+    || `<li class="muted">Nessuna notizia per questa zona nelle ultime ore.</li>`;
+  document.querySelectorAll(".chip-zona").forEach(b => {
+    const attivo = b.dataset.zona === zonaNotizie;
+    b.classList.toggle("attivo", attivo);
+    b.setAttribute("aria-pressed", attivo);
+  });
+}
+
+$("zone-notizie").addEventListener("click", e => {
+  const b = e.target.closest(".chip-zona");
+  if (!b) return;
+  zonaNotizie = b.dataset.zona;
+  memoria.scrivi("zona-notizie", zonaNotizie);
+  mostraZona();
+});
 
 async function caricaCalendario() {
   let dati;
@@ -1041,7 +1058,7 @@ if (esiste("titoli-lista") || esiste("titoli-corpo")) {
   caricaTitoli();
   setInterval(caricaTitoli, 60000);                  // ogni minuto (le crypto cambiano spesso)
 }
-if (esiste("notizie-home") || esiste("notizie-argomenti")) {
+if (esiste("notizie-home") || esiste("notizie-elenco")) {
   caricaNotizie();
   setInterval(caricaNotizie, 10 * 60 * 1000);
 }

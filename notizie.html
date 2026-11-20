@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Le ultime notizie sui mercati e sui titoli seguiti.">
+  <meta name="description" content="Le ultime notizie dal mondo, divise per zona.">
   <meta name="theme-color" content="#0B4F8A">
   <title>Notizie – Mercati e Meteo</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=3bc22408">
+  <link rel="stylesheet" href="style.css?v=e38534a2">
 </head>
 <body>
   <header class="topbar">
@@ -45,12 +45,16 @@
   <main class="contenitore">
     <header class="pagina-testa">
       <div>
-        <h1>Notizie</h1>
-        <p>Gli articoli degli ultimi tre giorni sui mercati e sui tuoi titoli, raccolti da Google News. Ogni notizia si apre sul sito del giornale.</p>
+        <h1>Notizie dal mondo</h1>
+        <p>Gli articoli delle ultime ore, raccolti da Google News. Scegli una zona; ogni notizia si apre sul sito del giornale.</p>
       </div>
       <span id="notizie-agg" class="aggiornato"></span>
     </header>
-    <div id="notizie-argomenti" class="notizie-griglia"><div class="scheletro h-righe"></div></div>
+    <div id="zone-notizie" class="chips zone-notizie" role="group" aria-label="Zona del mondo"></div>
+    <section class="sezione-notizie" aria-live="polite">
+      <h2 id="notizie-zona-titolo" class="visivamente-nascosto">Notizie</h2>
+      <ol id="notizie-elenco" class="notizie notizie-due"><li class="scheletro h-righe"></li></ol>
+    </section>
   </main>
 
   <footer class="piede">
@@ -61,6 +65,6 @@
     </div>
   </footer>
 
-  <script src="app.js?v=0683a255"></script>
+  <script src="app.js?v=7b9a61b3"></script>
 </body>
 </html>

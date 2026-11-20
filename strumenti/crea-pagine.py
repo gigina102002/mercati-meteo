@@ -126,7 +126,7 @@ home = '''    <section id="avvisi" class="avvisi" hidden aria-live="polite">
       </section>
     </div>
     <section class="sezione">
-      ''' + blocco_testa("Ultime notizie", "Tutte le notizie", "notizie.html") + '''
+      ''' + blocco_testa("Notizie dal mondo", "Tutte le notizie", "notizie.html") + '''
       <ol id="notizie-home" class="notizie notizie-due"><li class="scheletro h-lista"></li></ol>
     </section>'''
 # ---------------- I MIEI TITOLI ----------------
@@ -251,8 +251,12 @@ valute = testa("Valute", "I cambi di riferimento della Banca Centrale Europea e 
     </div>'''
 
 # ---------------- NOTIZIE ----------------
-notizie = testa("Notizie", "Gli articoli degli ultimi tre giorni sui mercati e sui tuoi titoli, raccolti da Google News. Ogni notizia si apre sul sito del giornale.", '<span id="notizie-agg" class="aggiornato"></span>') + '''
-    <div id="notizie-argomenti" class="notizie-griglia"><div class="scheletro h-righe"></div></div>'''
+notizie = testa("Notizie dal mondo", "Gli articoli delle ultime ore, raccolti da Google News. Scegli una zona; ogni notizia si apre sul sito del giornale.", '<span id="notizie-agg" class="aggiornato"></span>') + '''
+    <div id="zone-notizie" class="chips zone-notizie" role="group" aria-label="Zona del mondo"></div>
+    <section class="sezione-notizie" aria-live="polite">
+      <h2 id="notizie-zona-titolo" class="visivamente-nascosto">Notizie</h2>
+      <ol id="notizie-elenco" class="notizie notizie-due"><li class="scheletro h-righe"></li></ol>
+    </section>'''
 
 # ---------------- METEO ----------------
 RICERCA = '''<div class="cielo-strumenti">
@@ -338,7 +342,7 @@ PAGINE = [
   ("indici.html", "Indici di borsa", "Indici di borsa di Europa, Stati Uniti e Asia.", indici),
   ("crypto.html", "Criptovalute", "Prezzi delle principali criptovalute in euro.", crypto),
   ("valute.html", "Valute", "Cambi valute BCE e convertitore.", valute),
-  ("notizie.html", "Notizie", "Le ultime notizie sui mercati e sui titoli seguiti.", notizie),
+  ("notizie.html", "Notizie", "Le ultime notizie dal mondo, divise per zona.", notizie),
   ("meteo.html", "Meteo", "Meteo attuale, previsioni orarie e a 7 giorni, radar e carte dei modelli.", meteo),
   ("voli.html", "Voli", "Mappa degli aerei in volo in tempo reale.", voli),
   ("navi.html", "Navi", "Mappa del traffico marittimo in tempo reale.", navi),

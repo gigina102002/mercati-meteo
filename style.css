@@ -462,3 +462,7 @@ svg.icona { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-
   .notizie-griglia > .blocco { padding: 0; border-left: 0; }
   .notizie-due { columns: 1; }
 }
+
+.zone-notizie { margin-bottom: 28px; }
+.sezione-notizie { border-top: 1px solid var(--linea); padding-top: 8px; }
+.visivamente-nascosto { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
