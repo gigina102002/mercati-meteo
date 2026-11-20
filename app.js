@@ -427,11 +427,9 @@ const fmtVar = v => v == null ? "" : (v > 0 ? "+" : "") + v.toLocaleString("it-I
 async function leggiBinance() {
   const coppie = I_MIEI_TITOLI.flatMap(g => g.simboli).filter(x => x.b).map(x => x.b);
   if (!coppie.length) return {};
-  const r = await fetch("https://api.binance.com/api/v3/ticker/24hr?symbols=" + encodeURIComponent(JSON.stringify(coppie)));
-  if (!r.ok) throw new Error("HTTP " + r.status);
-  const oggi = await r.json();
+  const oggi = await scaricaJson("https://api.binance.com/api/v3/ticker/24hr?symbols=" + encodeURIComponent(JSON.stringify(coppie)), 6000);
   const storici = await Promise.all(coppie.map(c =>
-    fetch(`https://api.binance.com/api/v3/klines?symbol=${c}&interval=1d&limit=90`).then(x => x.ok ? x.json() : []).catch(() => [])));
+    scaricaJson(`https://api.binance.com/api/v3/klines?symbol=${c}&interval=1d&limit=90`, 6000).catch(() => [])));
   const out = {};
   oggi.forEach(t => {
     const i = coppie.indexOf(t.symbol);
@@ -445,15 +443,31 @@ async function leggiBinance() {
 
 const statoTitoli = { dati: null, binance: {} };
 
+// fetch con un tempo massimo: se un servizio non risponde, non blocca la pagina
+function scaricaJson(url, ms = 8000) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  return fetch(url, { signal: ctrl.signal })
+    .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+    .finally(() => clearTimeout(timer));
+}
+
 async function caricaTitoli() {
-  const [dati, binance] = await Promise.all([
-    fetch(URL_DATI + "?v=" + Math.floor(Date.now() / 60000)).then(r => r.ok ? r.json() : null).catch(() => null),
-    leggiBinance().catch(e => { console.warn("Binance:", e); return {}; })
-  ]);
-  if (dati) statoTitoli.dati = dati;
-  statoTitoli.binance = Object.keys(binance).length ? binance : statoTitoli.binance;
+  // 1) prezzi di borsa dal file di GitHub: li mostriamo appena arrivano
+  try {
+    statoTitoli.dati = await scaricaJson(URL_DATI + "?v=" + Math.floor(Date.now() / 60000));
+  } catch (e) {
+    console.warn("Dati di borsa:", e);
+  }
   if (!statoTitoli.dati) return usaRiserva();   // senza i prezzi di borsa usiamo TradingView
   disegnaTitoli();
+  // 2) crypto in tempo reale da Binance: aggiornano le righe quando (e se) arrivano
+  try {
+    const binance = await leggiBinance();
+    if (Object.keys(binance).length) { statoTitoli.binance = binance; disegnaTitoli(); }
+  } catch (e) {
+    console.warn("Binance non disponibile, uso i prezzi di riserva:", e);
+  }
 }
 
 // I dati di un titolo: prima Binance (crypto), poi il file di GitHub

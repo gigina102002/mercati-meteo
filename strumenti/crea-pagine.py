@@ -1,7 +1,11 @@
 # Genera le pagine del sito con intestazione e piè di pagina comuni.
 # Uso:  python3 strumenti/crea-pagine.py   (dalla cartella del sito)
-import pathlib
+import hashlib, pathlib
 qui = pathlib.Path(__file__).resolve().parent.parent
+# numero di versione dei file: cambia a ogni modifica, così il browser non usa copie vecchie
+def versione(nome):
+    return hashlib.sha1((qui / nome).read_bytes()).hexdigest()[:8]
+V_CSS, V_JS = versione("style.css"), versione("app.js")
 
 MENU = [("index.html", "Home"), ("titoli.html", "I miei titoli"), ("indici.html", "Indici"),
         ("crypto.html", "Crypto"), ("valute.html", "Valute"), ("meteo.html", "Meteo"),
@@ -39,7 +43,7 @@ def pagina(file, titolo, descrizione, contenuto, cielo=""):
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v={V_CSS}">
 </head>
 <body>
   <header class="topbar">
@@ -76,7 +80,7 @@ def pagina(file, titolo, descrizione, contenuto, cielo=""):
     </div>
   </footer>
 
-  <script src="app.js"></script>
+  <script src="app.js?v={V_JS}"></script>
 </body>
 </html>
 '''
